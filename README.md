@@ -1,22 +1,18 @@
-# Memories
-
-![Memories](https://i.ibb.co/7CmVbCW/image.png)
-
 ## Introduction
-This is a full-stack MERN application called "Memories" - a social media app that allows users to post interesting events that happened in their lives. Built with modern web technologies and best practices.
+This is a full-stack MERN application called "Good Moments" - a social media app that allows users to post interesting events that happened in their lives. Built with modern web technologies and best practices.
 
 The application demonstrates comprehensive full-stack development skills including frontend React development, backend API design, database management, and modern deployment practices.
 
 ## Quick Start
 - Run `npm i && npm start` for both client and server side to start the app
 
-# 🎯 MERN Memories Project
+# 🎯 MERN Good Moments Project
 
 A full-stack social media application built with the MERN stack (MongoDB, Express.js, React.js, Node.js).
 
 ## 🌟 Project Overview
 
-This is a **Memories** application where users can:
+This is a **Good Moments** application where users can:
 - ✨ Create, read, update, and delete memory posts
 - 🖼️ Upload and share images with their memories
 - ❤️ Like and interact with posts
