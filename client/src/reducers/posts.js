@@ -45,7 +45,19 @@ export default (state = getInitialState(), action) => {
     case FETCH_BY_CREATOR:
       return { ...state, posts: action.payload.data };
     case FETCH_POST:
-      return { ...state, post: action.payload.post };
+      const fetchedPost = action.payload.post;
+      // Cache individual post in sessionStorage for instant reload
+      if (fetchedPost && fetchedPost._id) {
+        try {
+          sessionStorage.setItem(`post_${fetchedPost._id}`, JSON.stringify({
+            post: fetchedPost,
+            timestamp: Date.now(),
+          }));
+        } catch (error) {
+          // Ignore cache errors
+        }
+      }
+      return { ...state, post: fetchedPost };
     case LIKE:
       return { 
         ...state, 

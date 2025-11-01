@@ -15,6 +15,29 @@ const Post = () => {
   const classes = useStyles();
   const { id } = useParams();
   
+  // Try to get post from Redux state immediately (from list)
+  const postFromList = posts?.find((p) => p._id === id);
+  
+  // Try to get cached post from sessionStorage for instant display
+  const [cachedPost, setCachedPost] = useState(() => {
+    try {
+      const cached = sessionStorage.getItem(`post_${id}`);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        // Only use cache if it's less than 10 minutes old
+        if (Date.now() - parsed.timestamp < 10 * 60 * 1000) {
+          return parsed.post;
+        }
+      }
+    } catch (error) {
+      // Ignore cache errors
+    }
+    return null;
+  });
+  
+  // Use cached post or post from list or Redux post (priority order)
+  const displayPost = post || cachedPost || postFromList;
+  
   // Get user from localStorage - use useState with lazy initialization to prevent re-renders
   const [user, setUser] = useState(() => {
     try {
@@ -41,22 +64,32 @@ const Post = () => {
     }
   }, []);
 
+  // Load fresh post data in background (don't block UI if we have cached/list post)
   useEffect(() => {
     if (userResult) {
-      dispatch(getPost(id));
+      // If we already have post from cache/list, load fresh data in background
+      if (displayPost) {
+        // Small delay to show cached post first
+        setTimeout(() => {
+          dispatch(getPost(id));
+        }, 50);
+      } else {
+        // No cached post, load immediately
+        dispatch(getPost(id));
+      }
     }
   }, [id, dispatch, userResult]);
 
   // Load related posts AFTER showing main post (don't block UI)
   useEffect(() => {
-    if (userResult && post && post.tags) {
+    if (userResult && displayPost && displayPost.tags) {
       // Load related posts in background after main post is displayed
-      // Small delay to prioritize main post display
+      // Delay to prioritize main post display - only load after post is shown
       setTimeout(() => {
-        dispatch(getPostsBySearch({ search: 'none', tags: post.tags.join(',') }));
-      }, 200);
+        dispatch(getPostsBySearch({ search: 'none', tags: displayPost.tags.join(',') }));
+      }, 500); // Longer delay to ensure main post is fully displayed
     }
-  }, [post, dispatch, userResult]);
+  }, [displayPost, dispatch, userResult]);
 
   // Redirect to auth if not logged in (after hooks)
   if (!userResult) {
@@ -69,8 +102,8 @@ const Post = () => {
 
   const openPost = (_id) => history.push(`/posts/${_id}`);
 
-  // Show main post even if related posts are loading
-  if (isLoading && !post) {
+  // Show loading only if we don't have any post (not from cache, list, or Redux)
+  if (isLoading && !displayPost) {
     return (
       <Paper elevation={6} className={classes.loadingPaper}>
         <CircularProgress size="7em" />
@@ -78,8 +111,8 @@ const Post = () => {
     );
   }
   
-  // If post exists, show it even if related posts are still loading
-  if (!post && !isLoading) {
+  // If no post found after loading
+  if (!displayPost && !isLoading) {
     return (
       <Paper elevation={6} className={classes.loadingPaper}>
         <Typography variant="h6">Post not found</Typography>
@@ -87,14 +120,14 @@ const Post = () => {
     );
   }
 
-  const recommendedPosts = posts.filter(({ _id }) => _id !== post._id);
+  const recommendedPosts = posts.filter(({ _id }) => _id !== displayPost._id);
 
   return (
     <Paper style={{ padding: '20px', borderRadius: '15px' }} elevation={6}>
       <div className={classes.card}>
         <div className={classes.section}>
-          <Typography variant="h3" component="h2">{post.title}</Typography>
-          <Typography gutterBottom variant="h6" color="textSecondary" component="h2">{post.tags.map((tag, index) => {
+          <Typography variant="h3" component="h2">{displayPost.title}</Typography>
+          <Typography gutterBottom variant="h6" color="textSecondary" component="h2">{displayPost.tags?.map((tag, index) => {
             // Remove # from tag for URL (URL path can't have #)
             const tagForUrl = tag.startsWith('#') ? tag.substring(1) : tag;
             return (
@@ -104,22 +137,22 @@ const Post = () => {
             );
           })}
           </Typography>
-          <Typography gutterBottom variant="body1" component="p">{post.message}</Typography>
+          <Typography gutterBottom variant="body1" component="p">{displayPost.message}</Typography>
           <Typography variant="h6">
             Created by:
-            <Link to={`/creators/${post.name}`} style={{ textDecoration: 'none', color: '#3f51b5' }}>
-              {` ${post.name}`}
+            <Link to={`/creators/${displayPost.name}`} style={{ textDecoration: 'none', color: '#3f51b5' }}>
+              {` ${displayPost.name}`}
             </Link>
           </Typography>
-          <Typography variant="body1">{moment(post.createdAt).fromNow()}</Typography>
+          <Typography variant="body1">{moment(displayPost.createdAt).fromNow()}</Typography>
           <Divider style={{ margin: '20px 0' }} />
           <Typography variant="body1"><strong>Realtime Chat - coming soon!</strong></Typography>
           <Divider style={{ margin: '20px 0' }} />
-          <CommentSection post={post} />
+          <CommentSection post={displayPost || post} />
           <Divider style={{ margin: '20px 0' }} />
         </div>
         <div className={classes.imageSection}>
-          <img className={classes.media} src={post.selectedFile || 'https://user-images.githubusercontent.com/194400/49531010-48dad180-f8b1-11e8-8d89-1e61320e1d82.png'} alt={post.title} />
+          <img className={classes.media} src={displayPost.selectedFile || 'https://user-images.githubusercontent.com/194400/49531010-48dad180-f8b1-11e8-8d89-1e61320e1d82.png'} alt={displayPost.title} />
         </div>
       </div>
       {!!recommendedPosts.length && (
