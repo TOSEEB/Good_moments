@@ -14,7 +14,8 @@ const CommentSection = ({ post }) => {
   const commentsRef = useRef();
 
   const handleComment = async () => {
-    const newComments = await dispatch(commentPost(`${user?.result?.name}: ${comment}`, post._id));
+    // Send just the comment text - backend will add user info
+    const newComments = await dispatch(commentPost(comment, post._id));
 
     setComment('');
     setComments(newComments);
@@ -27,17 +28,30 @@ const CommentSection = ({ post }) => {
       <div className={classes.commentsOuterContainer}>
         <div className={classes.commentsInnerContainer}>
           <Typography gutterBottom variant="h6">Comments</Typography>
-          {comments?.map((c, i) => (
-            <Typography key={i} gutterBottom variant="subtitle1">
-              <strong>{c.split(': ')[0]}</strong>
-              {c.split(':')[1]}
-            </Typography>
-          ))}
+          {comments?.map((c, i) => {
+            // Handle both old string format and new object format
+            let userName, commentText;
+            if (typeof c === 'string') {
+              // Old format: "Name: comment"
+              const parts = c.split(': ');
+              userName = parts[0];
+              commentText = parts.slice(1).join(': ');
+            } else {
+              // New format: { user, comment, userId, createdAt }
+              userName = c.user || 'Anonymous';
+              commentText = c.comment || c;
+            }
+            return (
+              <Typography key={i} gutterBottom variant="subtitle1">
+                <strong>{userName}:</strong> {commentText}
+              </Typography>
+            );
+          })}
           <div ref={commentsRef} />
         </div>
         <div style={{ width: '70%' }}>
           <Typography gutterBottom variant="h6">Write a comment</Typography>
-          <TextField fullWidth rows={4} variant="outlined" label="Comment" multiline value={comment} onChange={(e) => setComment(e.target.value)} />
+          <TextField fullWidth minRows={4} variant="outlined" label="Comment" multiline value={comment} onChange={(e) => setComment(e.target.value)} />
           <br />
           <Button style={{ marginTop: '10px' }} fullWidth disabled={!comment.length} color="primary" variant="contained" onClick={handleComment}>
             Comment

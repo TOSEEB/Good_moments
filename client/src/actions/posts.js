@@ -9,7 +9,7 @@ export const getPost = (id) => async (dispatch) => {
 
     dispatch({ type: FETCH_POST, payload: { post: data } }); 
   } catch (error) {
-    console.log(error);
+    // Error fetching post
   }
 };
 
@@ -21,7 +21,7 @@ export const getPosts = (page) => async (dispatch) => {
     dispatch({ type: FETCH_ALL, payload: { data, currentPage, numberOfPages } });
     dispatch({ type: END_LOADING });
   } catch (error) {
-    console.log(error);
+    // Error fetching posts
   }
 };
 
@@ -33,7 +33,7 @@ export const getPostsByCreator = (name) => async (dispatch) => {
     dispatch({ type: FETCH_BY_CREATOR, payload: { data } });
     dispatch({ type: END_LOADING });
   } catch (error) {
-    console.log(error);
+    // Error fetching posts
   }
 };
 
@@ -45,7 +45,7 @@ export const getPostsBySearch = (searchQuery) => async (dispatch) => {
     dispatch({ type: FETCH_BY_SEARCH, payload: { data } });
     dispatch({ type: END_LOADING });
   } catch (error) {
-    console.log(error);
+    // Error fetching posts
   }
 };
 
@@ -58,7 +58,7 @@ export const createPost = (post, history) => async (dispatch) => {
 
     history.push(`/posts/${data._id}`);
   } catch (error) {
-    console.log(error);
+    // Error creating post
   }
 };
 
@@ -68,19 +68,17 @@ export const updatePost = (id, post) => async (dispatch) => {
 
     dispatch({ type: UPDATE, payload: data });
   } catch (error) {
-    console.log(error);
+    // Error updating post
   }
 };
 
 export const likePost = (id) => async (dispatch) => {
-  const user = JSON.parse(localStorage.getItem('profile'));
-
   try {
-    const { data } = await api.likePost(id, user?.token);
-
+    const { data } = await api.likePost(id);
     dispatch({ type: LIKE, payload: data });
   } catch (error) {
-    console.log(error);
+    // Error liking post - dispatch to show error or handle silently
+    // The error might be due to authentication issues
   }
 };
 
@@ -92,7 +90,7 @@ export const commentPost = (value, id) => async (dispatch) => {
 
     return data.comments;
   } catch (error) {
-    console.log(error);
+    // Error commenting on post
   }
 };
 
@@ -102,6 +100,6 @@ export const deletePost = (id) => async (dispatch) => {
 
     dispatch({ type: DELETE, payload: id });
   } catch (error) {
-    console.log(error);
+    // Error deleting post
   }
 };

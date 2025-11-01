@@ -19,7 +19,11 @@ export default (state = { isLoading: true, posts: [] }, action) => {
     case FETCH_POST:
       return { ...state, post: action.payload.post };
     case LIKE:
-      return { ...state, posts: state.posts.map((post) => (post._id === action.payload._id ? action.payload : post)) };
+      return { 
+        ...state, 
+        posts: state.posts.map((post) => (post._id === action.payload._id ? action.payload : post)),
+        post: state.post && state.post._id === action.payload._id ? action.payload : state.post
+      };
     case COMMENT:
       return {
         ...state,

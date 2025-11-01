@@ -12,12 +12,23 @@ import { likePost, deletePost } from '../../../actions/posts';
 import useStyles from './styles';
 
 const Post = ({ post, setCurrentId }) => {
-  const user = JSON.parse(localStorage.getItem('profile'));
+  // Get user from localStorage safely
+  const getUser = () => {
+    try {
+      const profile = localStorage.getItem('profile');
+      return profile ? JSON.parse(profile) : null;
+    } catch (error) {
+      return null;
+    }
+  };
+
+  const user = getUser();
   const dispatch = useDispatch();
   const history = useHistory();
   const classes = useStyles();
 
-  const userId = user?.result.googleId || user?.result?._id;
+  // Get userId - Both login methods now use _id for consistent access privileges
+  const userId = user?.result?._id;
 
   const handleLike = async () => {
     dispatch(likePost(post._id));
@@ -25,7 +36,9 @@ const Post = ({ post, setCurrentId }) => {
 
   const Likes = () => {
     if (post.likes && post.likes.length > 0) {
-      return post.likes.find((like) => like === userId)
+      // Compare with String() to handle both string and number IDs
+      const hasLiked = post.likes.find((like) => String(like) === String(userId));
+      return hasLiked
         ? (
           <><ThumbUpAltIcon fontSize="small" />&nbsp;{post.likes.length > 2 ? `You and ${post.likes.length - 1} others` : `${post.likes.length} like${post.likes.length > 1 ? 's' : ''}` }</>
         ) : (
@@ -55,7 +68,7 @@ const Post = ({ post, setCurrentId }) => {
           <Typography variant="h6">{post.name}</Typography>
           <Typography variant="body2">{moment(post.createdAt).fromNow()}</Typography>
         </div>
-        {(user?.result?.googleId === post?.creator || user?.result?._id === post?.creator) && (
+        {(user?.result?._id === post?.creator) && (
         <div className={classes.overlay2} name="edit">
           <Button
             onClick={(e) => {
@@ -78,10 +91,18 @@ const Post = ({ post, setCurrentId }) => {
         </CardContent>
       </ButtonBase>
       <CardActions className={classes.cardActions}>
-        <Button size="small" color="primary" disabled={!user?.result} onClick={handleLike}>
+        <Button 
+          size="small" 
+          color="primary" 
+          disabled={!user?.result} 
+          onClick={(e) => {
+            e.stopPropagation(); // Prevent card click event
+            handleLike();
+          }}
+        >
           <Likes />
         </Button>
-        {(user?.result?.googleId === post?.creator || user?.result?._id === post?.creator) && (
+        {(user?.result?._id === post?.creator) && (
           <Button size="small" color="secondary" onClick={() => dispatch(deletePost(post._id))}>
             <DeleteIcon fontSize="small" /> &nbsp; Delete
           </Button>

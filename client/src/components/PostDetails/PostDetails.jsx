@@ -1,8 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Paper, Typography, CircularProgress, Divider } from '@material-ui/core/';
 import { useDispatch, useSelector } from 'react-redux';
 import moment from 'moment';
-import { useParams, useHistory, Link } from 'react-router-dom';
+import { useParams, useHistory, Link, Redirect } from 'react-router-dom';
 
 import { getPost, getPostsBySearch } from '../../actions/posts';
 import CommentSection from './CommentSection';
@@ -14,18 +14,53 @@ const Post = () => {
   const history = useHistory();
   const classes = useStyles();
   const { id } = useParams();
-
-  useEffect(() => {
-    dispatch(getPost(id));
-  }, [id, dispatch]);
-
-  useEffect(() => {
-    if (post) {
-      dispatch(getPostsBySearch({ search: 'none', tags: post?.tags.join(',') }));
+  
+  // Get user from localStorage - use useState with lazy initialization to prevent re-renders
+  const [user, setUser] = useState(() => {
+    try {
+      const profile = localStorage.getItem('profile');
+      return profile ? JSON.parse(profile) : null;
+    } catch (error) {
+      return null;
     }
-  }, [post, dispatch]);
+  });
 
-  if (!post) return null;
+  // Extract user result to avoid complex expression in dependency arrays
+  const userResult = user?.result;
+
+  // Update user from localStorage when component mounts
+  useEffect(() => {
+    try {
+      const profile = localStorage.getItem('profile');
+      if (profile) {
+        const parsed = JSON.parse(profile);
+        setUser(parsed);
+      }
+    } catch (error) {
+      // Error reading profile
+    }
+  }, []);
+
+  useEffect(() => {
+    if (userResult) {
+      dispatch(getPost(id));
+    }
+  }, [id, dispatch, userResult]);
+
+  useEffect(() => {
+    if (userResult && post && post.tags) {
+      dispatch(getPostsBySearch({ search: 'none', tags: post.tags.join(',') }));
+    }
+  }, [post, dispatch, userResult]);
+
+  // Redirect to auth if not logged in (after hooks)
+  if (!userResult) {
+    return <Redirect to="/auth" />;
+  }
+
+  if (!post && !isLoading) {
+    return null;
+  }
 
   const openPost = (_id) => history.push(`/posts/${_id}`);
 
@@ -44,11 +79,15 @@ const Post = () => {
       <div className={classes.card}>
         <div className={classes.section}>
           <Typography variant="h3" component="h2">{post.title}</Typography>
-          <Typography gutterBottom variant="h6" color="textSecondary" component="h2">{post.tags.map((tag) => (
-            <Link to={`/tags/${tag}`} style={{ textDecoration: 'none', color: '#3f51b5' }}>
-              {` #${tag} `}
-            </Link>
-          ))}
+          <Typography gutterBottom variant="h6" color="textSecondary" component="h2">{post.tags.map((tag, index) => {
+            // Remove # from tag for URL (URL path can't have #)
+            const tagForUrl = tag.startsWith('#') ? tag.substring(1) : tag;
+            return (
+              <Link key={index} to={`/tags/${encodeURIComponent(tagForUrl)}`} style={{ textDecoration: 'none', color: '#3f51b5' }}>
+                {` #${tag} `}
+              </Link>
+            );
+          })}
           </Typography>
           <Typography gutterBottom variant="body1" component="p">{post.message}</Typography>
           <Typography variant="h6">

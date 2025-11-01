@@ -1,5 +1,5 @@
 import React from 'react';
-import { Grid, CircularProgress } from '@material-ui/core';
+import { Grid, CircularProgress, Typography } from '@material-ui/core';
 import { useSelector } from 'react-redux';
 
 import Post from './Post/Post';
@@ -8,6 +8,15 @@ import useStyles from './styles';
 const Posts = ({ setCurrentId }) => {
   const { posts, isLoading } = useSelector((state) => state.posts);
   const classes = useStyles();
+  const user = JSON.parse(localStorage.getItem('profile'));
+
+  if (!user?.result) {
+    return (
+      <Typography variant="h6" align="center">
+        Please sign in to view posts.
+      </Typography>
+    );
+  }
 
   if (!posts.length && !isLoading) return 'No posts';
 

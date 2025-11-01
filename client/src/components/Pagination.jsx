@@ -14,7 +14,8 @@ const Paginate = ({ page }) => {
   const classes = useStyles();
 
   useEffect(() => {
-    if (page) {
+    const user = JSON.parse(localStorage.getItem('profile'));
+    if (page && user?.result) {
       dispatch(getPosts(page));
     }
   }, [dispatch, page]);

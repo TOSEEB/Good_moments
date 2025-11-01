@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from 'express';
 import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
@@ -15,8 +16,14 @@ app.use(cors());
 app.use('/posts', postRoutes);
 app.use('/user', userRoutes);
 
-const CONNECTION_URL = 'mongodb://localhost:27017/memories'; // Local MongoDB
+const CONNECTION_URL = process.env.MONGODB_URL;
 const PORT = process.env.PORT || 5000;
+
+if (!CONNECTION_URL) {
+  console.error('❌ ERROR: MONGODB_URL is not defined in environment variables.');
+  console.error('Please create a .env file in the server directory with MONGODB_URL');
+  process.exit(1);
+}
 
 // Try to connect to MongoDB, but start server even if it fails
 mongoose.connect(CONNECTION_URL, { useNewUrlParser: true, useUnifiedTopology: true })

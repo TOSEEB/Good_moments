@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Grow, Grid, AppBar, TextField, Button, Paper } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useHistory, useLocation, Redirect } from 'react-router-dom';
 import ChipInput from 'material-ui-chip-input';
 
-import { getPostsBySearch } from '../../actions/posts';
+import { getPosts, getPostsBySearch } from '../../actions/posts';
 import Posts from '../Posts/Posts';
 import Form from '../Form/Form';
 import Pagination from '../Pagination';
@@ -22,15 +22,39 @@ const Home = () => {
 
   const [currentId, setCurrentId] = useState(0);
   const dispatch = useDispatch();
-
+  const history = useHistory();
+  
+  // Get user from localStorage - use useState with lazy initialization to prevent re-renders
+  const [user, setUser] = useState(() => {
+    try {
+      const profile = localStorage.getItem('profile');
+      if (profile) {
+        return JSON.parse(profile);
+      }
+      return null;
+    } catch (error) {
+      return null;
+    }
+  });
+  
   const [search, setSearch] = useState(searchQuery || '');
   const [tags, setTags] = useState(tagsQuery ? tagsQuery.split(',').filter(tag => tag.trim() !== '') : []);
-  const history = useHistory();
+
+  // Extract user result to avoid complex expression in dependency arrays
+  const userResult = user?.result;
 
   const searchPost = () => {
     if (search.trim() || tags.length > 0) {
-      dispatch(getPostsBySearch({ search, tags: tags.join(',') }));
-      history.push(`/posts/search?searchQuery=${search || 'none'}&tags=${tags.join(',')}`);
+      // Normalize tags: ensure they have # prefix for consistency
+      const normalizedTags = tags.map(tag => {
+        const trimmed = tag.trim();
+        return trimmed.startsWith('#') ? trimmed : `#${trimmed}`;
+      });
+      
+      // Encode tags properly for URL (encode # as %23)
+      const encodedTags = normalizedTags.map(tag => encodeURIComponent(tag)).join(',');
+      dispatch(getPostsBySearch({ search, tags: normalizedTags.join(',') }));
+      history.push(`/posts/search?searchQuery=${search || 'none'}&tags=${encodedTags}`);
     } else {
       history.push('/');
     }
@@ -52,40 +76,59 @@ const Home = () => {
     history.push('/');
   };
 
+  // Update user from localStorage when component mounts
+  useEffect(() => {
+    try {
+      const profile = localStorage.getItem('profile');
+      if (profile) {
+        const parsed = JSON.parse(profile);
+        setUser(parsed);
+      }
+    } catch (error) {
+      // Error reading profile
+    }
+  }, []);
+
   // Clear search state when navigating to main posts page (no search params)
   useEffect(() => {
-    if (!searchQuery && !tagsQuery) {
+    if (userResult && !searchQuery && !tagsQuery) {
       setSearch('');
       setTags([]);
     }
-  }, [searchQuery, tagsQuery]);
+  }, [searchQuery, tagsQuery, userResult]);
 
   // Trigger search when component loads with URL parameters
   useEffect(() => {
-    if (searchQuery || tagsQuery) {
-      dispatch(getPostsBySearch({ search: searchQuery, tags: tagsQuery }));
+    if (userResult && (searchQuery || tagsQuery)) {
+      // Decode tagsQuery if URL encoded
+      let decodedTagsQuery = tagsQuery;
+      if (tagsQuery) {
+        try {
+          decodedTagsQuery = decodeURIComponent(tagsQuery);
+        } catch (e) {
+          decodedTagsQuery = tagsQuery;
+        }
+      }
+      dispatch(getPostsBySearch({ search: searchQuery, tags: decodedTagsQuery }));
     }
-  }, [dispatch, searchQuery, tagsQuery]);
+  }, [dispatch, searchQuery, tagsQuery, userResult]);
 
-  // Clear search on page refresh (when component mounts)
+  // Fetch posts when user is logged in and no search query
   useEffect(() => {
-    // Check if we're on a search page and clear it on refresh
-    if (searchQuery || tagsQuery) {
-      // Use a small delay to ensure the component is fully mounted
-      const timer = setTimeout(() => {
-        history.replace('/posts');
-        setSearch('');
-        setTags([]);
-      }, 100);
-      
-      return () => clearTimeout(timer);
+    if (userResult && !searchQuery && !tagsQuery) {
+      dispatch(getPosts(page));
     }
-  }, [searchQuery, tagsQuery, history]);
+  }, [dispatch, page, userResult, searchQuery, tagsQuery]);
+
+  // Redirect to auth if not logged in (after all hooks)
+  if (!userResult) {
+    return <Redirect to="/auth" />;
+  }
 
   return (
     <Grow in>
       <Container maxWidth="xl">
-        <Grid container justify="space-between" alignItems="stretch" spacing={3} className={classes.gridContainer}>
+        <Grid container justifyContent="space-between" alignItems="stretch" spacing={3} className={classes.gridContainer}>
           <Grid item xs={12} sm={6} md={9}>
             <Posts setCurrentId={setCurrentId} />
           </Grid>

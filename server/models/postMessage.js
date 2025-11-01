@@ -16,7 +16,7 @@ const postSchema = mongoose.Schema({
         default: [],
     },
     comments: {
-        type: [String],
+        type: [mongoose.Schema.Types.Mixed], // Support both old string format and new object format
         default: [],
     },
     createdAt: {

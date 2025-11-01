@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { AppBar, Typography, Toolbar, Avatar, Button } from '@material-ui/core';
 import { Link, useHistory, useLocation } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
@@ -10,31 +10,61 @@ import * as actionType from '../../constants/actionTypes';
 import useStyles from './styles';
 
 const Navbar = () => {
-  const [user, setUser] = useState(JSON.parse(localStorage.getItem('profile')));
+  const [user, setUser] = useState(() => {
+    try {
+      const profile = localStorage.getItem('profile');
+      return profile ? JSON.parse(profile) : null;
+    } catch (error) {
+      return null;
+    }
+  });
   const dispatch = useDispatch();
   const location = useLocation();
   const history = useHistory();
   const classes = useStyles();
 
-  const logout = () => {
+  const logout = useCallback(() => {
     dispatch({ type: actionType.LOGOUT });
-
     history.push('/auth');
-
     setUser(null);
-  };
+  }, [dispatch, history]);
 
   useEffect(() => {
-    const token = user?.token;
+    try {
+      const profile = localStorage.getItem('profile');
+      const userData = profile ? JSON.parse(profile) : null;
+      setUser(userData);
 
-    if (token) {
-      const decodedToken = decode(token);
+      const token = userData?.token;
 
-      if (decodedToken.exp * 1000 < new Date().getTime()) logout();
+      if (token) {
+        try {
+          // Check if token is a JWT (custom auth tokens are JWTs, Google OAuth tokens are not)
+          // JWT tokens are typically less than 500 characters and have 3 parts separated by dots
+          const isJWT = token.length < 500 && token.split('.').length === 3;
+          
+          if (isJWT) {
+            // This is a JWT token (from custom signin/signup)
+            const decodedToken = decode(token);
+            
+            // Check if token is expired
+            if (decodedToken.exp && decodedToken.exp * 1000 < new Date().getTime()) {
+              logout();
+            }
+          }
+        } catch (decodeError) {
+          // If decode fails, it might be a Google OAuth token (not a JWT)
+          // Only logout if we're sure it's a JWT that failed
+          const isJWT = token.length < 500 && token.split('.').length === 3;
+          if (isJWT) {
+            logout();
+          }
+        }
+      }
+    } catch (error) {
+      // Error reading profile
     }
-
-    setUser(JSON.parse(localStorage.getItem('profile')));
-  }, [location, user?.token, logout]);
+  }, [location, logout]);
 
   return (
     <AppBar className={classes.appBar} position="static" color="inherit">

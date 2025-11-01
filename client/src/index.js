@@ -12,7 +12,12 @@ import './index.css';
 const initializeAuth = () => {
   const profile = localStorage.getItem('profile');
   if (profile) {
-    return { auth: { authData: JSON.parse(profile) } };
+    try {
+      const parsed = JSON.parse(profile);
+      return { auth: { authData: parsed } };
+    } catch (error) {
+      return {};
+    }
   }
   return {};
 };

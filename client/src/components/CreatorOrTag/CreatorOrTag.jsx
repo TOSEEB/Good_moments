@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { useParams, useLocation } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useParams, useLocation, Redirect } from 'react-router-dom';
 import { Typography, CircularProgress, Grid, Divider } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -10,16 +10,51 @@ const CreatorOrTag = () => {
   const { name } = useParams();
   const dispatch = useDispatch();
   const { posts, isLoading } = useSelector((state) => state.posts);
-
   const location = useLocation();
+  
+  // Get user from localStorage safely
+  const [user, setUser] = useState(() => {
+    try {
+      const profile = localStorage.getItem('profile');
+      return profile ? JSON.parse(profile) : null;
+    } catch (error) {
+      return null;
+    }
+  });
+
+  // Update user from localStorage when component mounts
+  useEffect(() => {
+    try {
+      const profile = localStorage.getItem('profile');
+      if (profile) {
+        const parsed = JSON.parse(profile);
+        setUser(parsed);
+      }
+    } catch (error) {
+      // Error reading profile
+    }
+  }, []);
+
+  const userResult = user?.result;
 
   useEffect(() => {
-    if (location.pathname.startsWith('/tags')) {
-      dispatch(getPostsBySearch({ tags: name }));
-    } else {
-      dispatch(getPostsByCreator(name));
+    if (userResult) {
+      if (location.pathname.startsWith('/tags')) {
+        // Decode URL parameter and normalize tag (add # if missing)
+        // Tags in database have # prefix, so we need to match
+        const decodedName = decodeURIComponent(name);
+        const normalizedTag = decodedName.startsWith('#') ? decodedName : `#${decodedName}`;
+        dispatch(getPostsBySearch({ tags: normalizedTag }));
+      } else {
+        dispatch(getPostsByCreator(name));
+      }
     }
-  }, [dispatch, location.pathname, name]);
+  }, [dispatch, location.pathname, name, userResult]);
+
+  // Redirect to auth if not logged in (after hooks)
+  if (!userResult) {
+    return <Redirect to="/auth" />;
+  }
 
   if (!posts.length && !isLoading) return 'No posts';
 

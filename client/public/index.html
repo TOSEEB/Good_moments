@@ -11,6 +11,12 @@
     <title>Memories</title>
   </head>
   <body>
+    <script>
+      // Polyfill for process.env in browser (must be before React scripts load)
+      if (typeof process === 'undefined') {
+        window.process = { env: {} };
+      }
+    </script>
     <div id="root"></div>
   </body>
 </html>
