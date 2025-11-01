@@ -241,11 +241,11 @@ const SignUp = () => {
       // Dispatch to Redux store
       dispatch({ type: AUTH, data: profileData });
       
-      // Use absolute URL for redirect
-      const redirectUrl = window.location.origin + '/posts';
-      
-      // Redirect immediately
-      window.location.replace(redirectUrl);
+      // Use React Router to navigate (preserves Redux state, no full page reload)
+      // Small delay to ensure Redux state is updated
+      setTimeout(() => {
+        history.push('/posts');
+      }, 100);
 
       return;
       
