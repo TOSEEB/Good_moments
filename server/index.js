@@ -13,6 +13,19 @@ app.use(bodyParser.json({ limit: '30mb', extended: true }));
 app.use(bodyParser.urlencoded({ limit: '30mb', extended: true }));
 app.use(cors());
 
+// Root route
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Good Moments API is running!',
+    version: '1.0.0',
+    endpoints: {
+      posts: '/posts',
+      user: '/user'
+    },
+    status: 'active'
+  });
+});
+
 app.use('/posts', postRoutes);
 app.use('/user', userRoutes);
 
