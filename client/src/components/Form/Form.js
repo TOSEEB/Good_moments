@@ -1,15 +1,18 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { TextField, Button, Typography, Paper } from '@material-ui/core';
+import { TextField, Button, Typography, Paper, CircularProgress } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
 import FileBase from 'react-file-base64';
 import { useHistory } from 'react-router-dom';
 import ChipInput from 'material-ui-chip-input';
 
 import { createPost, updatePost } from '../../actions/posts';
+import { compressImage } from '../../utils/imageCompress';
 import useStyles from './styles';
 
 const Form = ({ currentId, setCurrentId }) => {
   const [postData, setPostData] = useState({ title: '', message: '', tags: [], selectedFile: '' });
+  const [isCompressing, setIsCompressing] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const post = useSelector((state) => (currentId ? state.posts.posts.find((message) => message._id === currentId) : null));
   const dispatch = useDispatch();
   const classes = useStyles();
@@ -31,13 +34,42 @@ const Form = ({ currentId, setCurrentId }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (isSubmitting) return; // Prevent double submission
 
-    if (currentId === 0) {
-      dispatch(createPost({ ...postData, name: user?.result?.name }, history));
-      clear();
+    setIsSubmitting(true);
+    
+    try {
+      if (currentId === 0) {
+        await dispatch(createPost({ ...postData, name: user?.result?.name }, history));
+        clear();
+      } else {
+        await dispatch(updatePost(currentId, { ...postData, name: user?.result?.name }));
+        clear();
+      }
+    } catch (error) {
+      console.error('Error submitting post:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
+  const handleFileUpload = async ({ base64, file }) => {
+    if (file && file.size > 0) {
+      setIsCompressing(true);
+      try {
+        // Compress image before converting to base64
+        const compressedBase64 = await compressImage(file);
+        setPostData({ ...postData, selectedFile: compressedBase64 });
+      } catch (error) {
+        console.error('Error compressing image:', error);
+        // Fallback to original if compression fails
+        setPostData({ ...postData, selectedFile: base64 });
+      } finally {
+        setIsCompressing(false);
+      }
     } else {
-      dispatch(updatePost(currentId, { ...postData, name: user?.result?.name }));
-      clear();
+      setPostData({ ...postData, selectedFile: base64 });
     }
   };
 
@@ -78,9 +110,50 @@ const Form = ({ currentId, setCurrentId }) => {
             onDelete={(chip) => handleDeleteChip(chip)}
           />
         </div>
-        <div className={classes.fileInput}><FileBase type="file" multiple={false} onDone={({ base64 }) => setPostData({ ...postData, selectedFile: base64 })} /></div>
-        <Button className={classes.buttonSubmit} variant="contained" color="primary" size="large" type="submit" fullWidth>Submit</Button>
-        <Button variant="contained" color="secondary" size="small" onClick={clear} fullWidth>Clear</Button>
+        <div className={classes.fileInput}>
+          <FileBase 
+            type="file" 
+            multiple={false} 
+            onDone={handleFileUpload}
+            disabled={isCompressing}
+          />
+          {isCompressing && (
+            <div style={{ display: 'flex', alignItems: 'center', marginTop: '8px' }}>
+              <CircularProgress size={20} style={{ marginRight: '10px' }} />
+              <Typography variant="body2" color="textSecondary">
+                Compressing image...
+              </Typography>
+            </div>
+          )}
+        </div>
+        <Button 
+          className={classes.buttonSubmit} 
+          variant="contained" 
+          color="primary" 
+          size="large" 
+          type="submit" 
+          fullWidth
+          disabled={isSubmitting || isCompressing}
+        >
+          {isSubmitting ? (
+            <>
+              <CircularProgress size={20} style={{ marginRight: '10px', color: 'white' }} />
+              Uploading...
+            </>
+          ) : (
+            'Submit'
+          )}
+        </Button>
+        <Button 
+          variant="contained" 
+          color="secondary" 
+          size="small" 
+          onClick={clear} 
+          fullWidth
+          disabled={isSubmitting || isCompressing}
+        >
+          Clear
+        </Button>
       </form>
     </Paper>
   );
