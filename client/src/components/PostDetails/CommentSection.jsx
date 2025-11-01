@@ -14,13 +14,24 @@ const CommentSection = ({ post }) => {
   const commentsRef = useRef();
 
   const handleComment = async () => {
-    // Send just the comment text - backend will add user info
-    const newComments = await dispatch(commentPost(comment, post._id));
+    try {
+      // Send just the comment text - backend will add user info
+      const newComments = await dispatch(commentPost(comment, post._id));
 
-    setComment('');
-    setComments(newComments);
-
-    commentsRef.current.scrollIntoView({ behavior: 'smooth' });
+      if (newComments) {
+        setComment('');
+        setComments(newComments);
+        commentsRef.current.scrollIntoView({ behavior: 'smooth' });
+      }
+    } catch (error) {
+      // Handle error - don't clear comment if it's an auth error
+      if (error.response?.status === 401) {
+        alert('Your session has expired. Please refresh the page and sign in again.');
+      } else {
+        console.error('Error posting comment:', error);
+        alert('Failed to post comment. Please try again.');
+      }
+    }
   };
 
   return (

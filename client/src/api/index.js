@@ -50,14 +50,33 @@ API.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // Token expired or invalid - clear storage and redirect to login
+      // Token expired or invalid
       console.warn('Authentication failed - token expired or invalid');
+      
+      // For certain actions, show error message instead of auto-logout
+      // This prevents logging out users when they're actively using the app
+      const url = error.config?.url || '';
+      const isUserAction = url.includes('/likePost') || url.includes('/commentPost') || url.includes('/posts/');
+      
+      if (isUserAction) {
+        // For user actions, just clear the token but don't redirect immediately
+        // Let the component handle the error gracefully
+        console.warn('Token expired during user action - please refresh and try again');
+        // Don't clear storage here - let the user finish what they're doing
+        // The component should handle the error
+        return Promise.reject(error);
+      }
+      
+      // For other cases (like fetching posts), auto-logout
       localStorage.removeItem('profile');
       sessionStorage.removeItem('posts_cache');
       
       // Only redirect if we're not already on the auth page
       if (window.location.pathname !== '/auth' && window.location.pathname !== '/auth/set-password' && window.location.pathname !== '/auth/reset-password') {
-        window.location.href = '/auth';
+        // Small delay to prevent immediate redirect during active use
+        setTimeout(() => {
+          window.location.href = '/auth';
+        }, 1000);
       }
     }
     return Promise.reject(error);
