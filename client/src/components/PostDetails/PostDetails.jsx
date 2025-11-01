@@ -47,9 +47,14 @@ const Post = () => {
     }
   }, [id, dispatch, userResult]);
 
+  // Load related posts AFTER showing main post (don't block UI)
   useEffect(() => {
     if (userResult && post && post.tags) {
-      dispatch(getPostsBySearch({ search: 'none', tags: post.tags.join(',') }));
+      // Load related posts in background after main post is displayed
+      // Small delay to prioritize main post display
+      setTimeout(() => {
+        dispatch(getPostsBySearch({ search: 'none', tags: post.tags.join(',') }));
+      }, 200);
     }
   }, [post, dispatch, userResult]);
 
