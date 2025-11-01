@@ -20,6 +20,9 @@ export default makeStyles((theme) => ({
     borderRadius: '20px',
     margin: '10px',
     flex: 1,
+    [theme.breakpoints.down('sm')]: {
+      margin: '5px',
+    },
   },
   imageSection: {
     marginLeft: '20px',
@@ -45,6 +48,11 @@ export default makeStyles((theme) => ({
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'space-between',
+    [theme.breakpoints.down('sm')]: {
+      width: '100%',
+      maxWidth: '300px',
+      margin: '10px auto',
+    },
     '&:hover': {
       transform: 'translateY(-2px)',
       boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
@@ -57,6 +65,10 @@ export default makeStyles((theme) => ({
     borderRadius: '8px',
     marginTop: '10px',
     alignSelf: 'center',
+    [theme.breakpoints.down('sm')]: {
+      width: '100%',
+      maxWidth: '200px',
+    },
   },
   recommendedTitle: {
     fontWeight: 'bold',
@@ -108,5 +120,8 @@ export default makeStyles((theme) => ({
     height: '200px',
     overflowY: 'auto',
     marginRight: '30px',
+    [theme.breakpoints.down('sm')]: {
+      marginRight: '10px',
+    },
   },
 }));

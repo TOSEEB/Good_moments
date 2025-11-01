@@ -12,6 +12,8 @@ export default makeStyles((theme) => ({
     padding: '10px 50px',
     [theme.breakpoints.down('sm')]: {
       flexDirection: 'column',
+      padding: '10px 20px',
+      margin: '15px 0',
     },
   },
   heading: {
