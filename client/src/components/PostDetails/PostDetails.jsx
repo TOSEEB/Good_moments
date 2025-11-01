@@ -64,10 +64,20 @@ const Post = () => {
 
   const openPost = (_id) => history.push(`/posts/${_id}`);
 
-  if (isLoading) {
+  // Show main post even if related posts are loading
+  if (isLoading && !post) {
     return (
       <Paper elevation={6} className={classes.loadingPaper}>
         <CircularProgress size="7em" />
+      </Paper>
+    );
+  }
+  
+  // If post exists, show it even if related posts are still loading
+  if (!post && !isLoading) {
+    return (
+      <Paper elevation={6} className={classes.loadingPaper}>
+        <Typography variant="h6">Post not found</Typography>
       </Paper>
     );
   }

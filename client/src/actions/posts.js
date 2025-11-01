@@ -84,13 +84,58 @@ export const updatePost = (id, post) => async (dispatch) => {
   }
 };
 
-export const likePost = (id) => async (dispatch) => {
+export const likePost = (id) => async (dispatch, getState) => {
+  // Optimistic update - update UI immediately
+  const state = getState();
+  const post = state.posts.posts?.find((p) => p._id === id) || state.posts.post;
+  
+  if (post) {
+    // Get user ID for optimistic update
+    let userId;
+    try {
+      const profile = JSON.parse(localStorage.getItem('profile') || '{}');
+      userId = profile?.result?._id;
+    } catch (e) {
+      // Ignore
+    }
+    
+    // Create optimistic post update
+    const currentLikes = post.likes || [];
+    const hasLiked = userId && currentLikes.some((like) => String(like) === String(userId));
+    
+    let optimisticPost;
+    if (hasLiked) {
+      // Unlike - remove user from likes
+      optimisticPost = {
+        ...post,
+        likes: currentLikes.filter((like) => String(like) !== String(userId)),
+        likeCount: Math.max(0, (post.likeCount || currentLikes.length) - 1)
+      };
+    } else {
+      // Like - add user to likes
+      optimisticPost = {
+        ...post,
+        likes: [...currentLikes, userId],
+        likeCount: (post.likeCount || currentLikes.length) + 1
+      };
+    }
+    
+    // Update UI immediately with optimistic data
+    dispatch({ type: LIKE, payload: optimisticPost });
+  }
+  
   try {
+    // Then sync with server
     const { data } = await api.likePost(id);
+    // Update with server response (has correct data)
     dispatch({ type: LIKE, payload: data });
   } catch (error) {
-    // Error liking post - dispatch to show error or handle silently
-    // The error might be due to authentication issues
+    // If error, rollback to original post state
+    if (post) {
+      dispatch({ type: LIKE, payload: post });
+    }
+    // Error liking post - UI already rolled back
+    console.error('Error liking post:', error);
   }
 };
 
