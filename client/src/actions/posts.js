@@ -7,9 +7,11 @@ export const getPost = (id) => async (dispatch) => {
 
     const { data } = await api.fetchPost(id);
 
-    dispatch({ type: FETCH_POST, payload: { post: data } }); 
+    dispatch({ type: FETCH_POST, payload: { post: data } });
+    dispatch({ type: END_LOADING });
   } catch (error) {
-    // Error fetching post
+    console.error('Error fetching post:', error);
+    dispatch({ type: END_LOADING });
   }
 };
 
@@ -21,7 +23,10 @@ export const getPosts = (page) => async (dispatch) => {
     dispatch({ type: FETCH_ALL, payload: { data, currentPage, numberOfPages } });
     dispatch({ type: END_LOADING });
   } catch (error) {
-    // Error fetching posts
+    console.error('Error fetching posts:', error);
+    dispatch({ type: END_LOADING });
+    // Optionally dispatch error state
+    dispatch({ type: FETCH_ALL, payload: { data: [], currentPage: 1, numberOfPages: 0 } });
   }
 };
 
@@ -33,7 +38,9 @@ export const getPostsByCreator = (name) => async (dispatch) => {
     dispatch({ type: FETCH_BY_CREATOR, payload: { data } });
     dispatch({ type: END_LOADING });
   } catch (error) {
-    // Error fetching posts
+    console.error('Error fetching posts by creator:', error);
+    dispatch({ type: END_LOADING });
+    dispatch({ type: FETCH_BY_CREATOR, payload: { data: [] } });
   }
 };
 
@@ -45,7 +52,9 @@ export const getPostsBySearch = (searchQuery) => async (dispatch) => {
     dispatch({ type: FETCH_BY_SEARCH, payload: { data } });
     dispatch({ type: END_LOADING });
   } catch (error) {
-    // Error fetching posts
+    console.error('Error fetching posts by search:', error);
+    dispatch({ type: END_LOADING });
+    dispatch({ type: FETCH_BY_SEARCH, payload: { data: [] } });
   }
 };
 
@@ -55,10 +64,13 @@ export const createPost = (post, history) => async (dispatch) => {
     const { data } = await api.createPost(post);
 
     dispatch({ type: CREATE, payload: data });
+    dispatch({ type: END_LOADING });
 
     history.push(`/posts/${data._id}`);
   } catch (error) {
-    // Error creating post
+    console.error('Error creating post:', error);
+    dispatch({ type: END_LOADING });
+    throw error; // Re-throw so component can handle it
   }
 };
 
