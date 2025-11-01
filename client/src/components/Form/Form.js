@@ -54,7 +54,10 @@ const Form = ({ currentId, setCurrentId }) => {
     }
   };
   
-  const handleFileUpload = async ({ base64, file }) => {
+  const handleFileUpload = async (result) => {
+    // react-file-base64 returns { base64, file } or just { base64 }
+    const { base64, file } = result;
+    
     if (file && file.size > 0) {
       setIsCompressing(true);
       try {
@@ -69,6 +72,7 @@ const Form = ({ currentId, setCurrentId }) => {
         setIsCompressing(false);
       }
     } else {
+      // If no file object, use the base64 directly (fallback)
       setPostData({ ...postData, selectedFile: base64 });
     }
   };
