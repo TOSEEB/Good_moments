@@ -14,20 +14,30 @@ export default makeStyles((theme) => ({
     [theme.breakpoints.down('sm')]: {
       flexWrap: 'wrap',
       flexDirection: 'column',
+      // On mobile: image first, then section below
+    },
+    [theme.breakpoints.up('md')]: {
+      // On desktop: section first, then image on right
+      flexDirection: 'row',
     },
   },
   section: {
     borderRadius: '20px',
     margin: '10px',
     flex: 1,
+    order: 1, // On desktop, section comes first (left side)
     [theme.breakpoints.down('sm')]: {
       margin: '5px',
+      order: 2, // On mobile, section comes second (below image)
     },
   },
   imageSection: {
     marginLeft: '20px',
+    order: 2, // On desktop, image comes second (right side)
     [theme.breakpoints.down('sm')]: {
       marginLeft: 0,
+      order: 1, // On mobile, image comes first
+      marginBottom: '20px',
     },
   },
   recommendedPosts: {
@@ -115,13 +125,26 @@ export default makeStyles((theme) => ({
   commentsOuterContainer: {
     display: 'flex',
     justifyContent: 'space-between',
+    [theme.breakpoints.down('sm')]: {
+      flexDirection: 'column',
+    },
   },
   commentsInnerContainer: {
     height: '200px',
     overflowY: 'auto',
     marginRight: '30px',
     [theme.breakpoints.down('sm')]: {
-      marginRight: '10px',
+      marginRight: 0,
+      marginBottom: '20px',
+      width: '100%',
+      order: 1,
+    },
+  },
+  commentInputContainer: {
+    width: '70%',
+    [theme.breakpoints.down('sm')]: {
+      width: '100%',
+      order: 2,
     },
   },
 }));

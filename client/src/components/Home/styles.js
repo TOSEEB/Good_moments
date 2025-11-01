@@ -13,8 +13,17 @@ export default makeStyles((theme) => ({
     padding: '16px',
   },
   gridContainer: {
-    [theme.breakpoints.down('xs')]: {
+    [theme.breakpoints.down('sm')]: {
       flexDirection: 'column-reverse',
+    },
+  },
+  fab: {
+    position: 'fixed',
+    bottom: theme.spacing(3),
+    right: theme.spacing(3),
+    zIndex: 1000,
+    [theme.breakpoints.up('md')]: {
+      display: 'none', // Hide on desktop (form is always visible)
     },
   },
 }));

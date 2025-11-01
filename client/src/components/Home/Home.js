@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Container, Grow, Grid, AppBar, TextField, Button, Paper } from '@material-ui/core';
+import React, { useState, useEffect, useRef } from 'react';
+import { Container, Grow, Grid, AppBar, TextField, Button, Paper, Fab } from '@material-ui/core';
+import AddIcon from '@material-ui/icons/Add';
 import { useDispatch } from 'react-redux';
 import { useHistory, useLocation, Redirect } from 'react-router-dom';
 import ChipInput from 'material-ui-chip-input';
@@ -23,6 +24,7 @@ const Home = () => {
   const [currentId, setCurrentId] = useState(0);
   const dispatch = useDispatch();
   const history = useHistory();
+  const formRef = useRef(null);
   
   // Get user from localStorage - use useState with lazy initialization to prevent re-renders
   const [user, setUser] = useState(() => {
@@ -120,6 +122,13 @@ const Home = () => {
     }
   }, [dispatch, page, userResult, searchQuery, tagsQuery]);
 
+  // Scroll to form when + button is clicked
+  const scrollToForm = () => {
+    if (formRef.current) {
+      formRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   // Redirect to auth if not logged in (after all hooks)
   if (!userResult) {
     return <Redirect to="/auth" />;
@@ -132,7 +141,7 @@ const Home = () => {
           <Grid item xs={12} sm={6} md={9}>
             <Posts setCurrentId={setCurrentId} />
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={12} sm={6} md={3} ref={formRef}>
             <AppBar className={classes.appBarSearch} position="static" color="inherit">
               <TextField onKeyDown={handleKeyPress} name="search" variant="outlined" label="Search Memories" fullWidth value={search} onChange={(e) => setSearch(e.target.value)} />
               <ChipInput
@@ -156,6 +165,15 @@ const Home = () => {
             )}
           </Grid>
         </Grid>
+        {/* Floating Action Button to scroll to form */}
+        <Fab
+          color="primary"
+          aria-label="add"
+          className={classes.fab}
+          onClick={scrollToForm}
+        >
+          <AddIcon />
+        </Fab>
       </Container>
     </Grow>
   );

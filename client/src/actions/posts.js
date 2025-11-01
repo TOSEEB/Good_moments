@@ -60,16 +60,17 @@ export const getPostsBySearch = (searchQuery) => async (dispatch) => {
 
 export const createPost = (post, history) => async (dispatch) => {
   try {
-    dispatch({ type: START_LOADING });
+    // Don't set loading - let form handle its own loading state
+    // This makes it feel faster
     const { data } = await api.createPost(post);
 
+    // Add post to list immediately (optimistic-like update)
     dispatch({ type: CREATE, payload: data });
-    dispatch({ type: END_LOADING });
 
+    // Navigate immediately without waiting
     history.push(`/posts/${data._id}`);
   } catch (error) {
     console.error('Error creating post:', error);
-    dispatch({ type: END_LOADING });
     throw error; // Re-throw so component can handle it
   }
 };

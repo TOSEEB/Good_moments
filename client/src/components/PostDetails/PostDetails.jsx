@@ -125,6 +125,11 @@ const Post = () => {
   return (
     <Paper style={{ padding: '20px', borderRadius: '15px' }} elevation={6}>
       <div className={classes.card}>
+        {/* Image first on mobile */}
+        <div className={classes.imageSection}>
+          <img className={classes.media} src={displayPost.selectedFile || 'https://user-images.githubusercontent.com/194400/49531010-48dad180-f8b1-11e8-8d89-1e61320e1d82.png'} alt={displayPost.title} />
+        </div>
+        {/* Description and tags, then comments below on mobile */}
         <div className={classes.section}>
           <Typography variant="h3" component="h2">{displayPost.title}</Typography>
           <Typography gutterBottom variant="h6" color="textSecondary" component="h2">{displayPost.tags?.map((tag, index) => {
@@ -150,9 +155,6 @@ const Post = () => {
           <Divider style={{ margin: '20px 0' }} />
           <CommentSection post={displayPost || post} />
           <Divider style={{ margin: '20px 0' }} />
-        </div>
-        <div className={classes.imageSection}>
-          <img className={classes.media} src={displayPost.selectedFile || 'https://user-images.githubusercontent.com/194400/49531010-48dad180-f8b1-11e8-8d89-1e61320e1d82.png'} alt={displayPost.title} />
         </div>
       </div>
       {!!recommendedPosts.length && (
