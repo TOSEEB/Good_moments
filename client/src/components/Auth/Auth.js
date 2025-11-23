@@ -241,11 +241,9 @@ const SignUp = () => {
       // Dispatch to Redux store
       dispatch({ type: AUTH, data: profileData });
       
-      // Use React Router to navigate (preserves Redux state, no full page reload)
-      // Small delay to ensure Redux state is updated
-      setTimeout(() => {
-        history.push('/posts');
-      }, 100);
+      // Use window.location.href for immediate and reliable redirect
+      // This ensures the redirect happens immediately after successful login
+      window.location.href = '/posts';
 
       return;
       
