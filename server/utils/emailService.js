@@ -46,7 +46,7 @@ export const sendPasswordResetEmail = async (email, token, name) => {
   
   if (!transporter) {
     // If email is not configured, log the link (for development)
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3001';
     const resetLink = `${frontendUrl}/auth/reset-password?token=${token}&email=${encodeURIComponent(email)}`;
     console.log('\n📧 Email service not configured. Password reset link (for development):');
     console.log(resetLink);
@@ -54,7 +54,7 @@ export const sendPasswordResetEmail = async (email, token, name) => {
     return { sent: false, link: resetLink };
   }
 
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3001';
   const resetLink = `${frontendUrl}/auth/reset-password?token=${token}&email=${encodeURIComponent(email)}`;
   const emailFrom = process.env.EMAIL_USER;
 
@@ -115,7 +115,7 @@ export const sendPasswordSetupEmail = async (email, token, name) => {
   
   if (!transporter) {
     // If email is not configured, log the link (for development)
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3001';
     const resetLink = `${frontendUrl}/auth/set-password?token=${token}&email=${encodeURIComponent(email)}`;
     console.log('\n📧 Email service not configured. Password setup link (for development):');
     console.log(resetLink);
@@ -123,7 +123,7 @@ export const sendPasswordSetupEmail = async (email, token, name) => {
     return { sent: false, link: resetLink };
   }
 
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3001';
   const resetLink = `${frontendUrl}/auth/reset-password?token=${token}&email=${encodeURIComponent(email)}`;
   const emailFrom = process.env.EMAIL_USER;
 

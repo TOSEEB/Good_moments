@@ -7,9 +7,10 @@ export default makeStyles((theme) => ({
     margin: '30px 0',
     display: 'flex',
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
     padding: '10px 50px',
+    position: 'relative',
     [theme.breakpoints.down('sm')]: {
       flexDirection: 'column',
       padding: '10px 20px',
@@ -30,8 +31,12 @@ export default makeStyles((theme) => ({
     display: 'flex',
     justifyContent: 'flex-end',
     width: '400px',
+    position: 'absolute',
+    right: '50px',
     [theme.breakpoints.down('sm')]: {
       width: 'auto',
+      position: 'static',
+      right: 'auto',
     },
   },
   profile: {

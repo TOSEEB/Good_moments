@@ -396,15 +396,24 @@ const SignUp = () => {
               Google Sign In
             </Button>
             {!isSignup && (
-              <Typography 
-                variant="body2" 
-                style={{ textAlign: 'center', marginTop: '10px', cursor: 'pointer' }}
-                onClick={handleOpenForgotPassword}
+              <Button 
+                variant="text"
+                color="primary"
+                style={{ 
+                  textAlign: 'center', 
+                  marginTop: '10px', 
+                  textTransform: 'none',
+                  textDecoration: 'underline',
+                  padding: '4px 8px'
+                }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleOpenForgotPassword();
+                }}
               >
-                <span style={{ color: '#1976d2', textDecoration: 'underline' }}>
-                  Forgot Password? / Set Password for Google Account
-                </span>
-              </Typography>
+                Forgot Password?
+              </Button>
             )}
           </>
         )}
