@@ -30,7 +30,7 @@
     "redux-thunk": "^2.3.0"
   },
   "scripts": {
-    "start": "set NODE_OPTIONS=--openssl-legacy-provider && cross-env PORT=3001 react-scripts start",
+    "start": "node scripts/start.js",
     "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

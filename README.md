@@ -4,7 +4,10 @@ This is a full-stack MERN application called "Good Moments" - a social media app
 The application demonstrates comprehensive full-stack development skills including frontend React development, backend API design, database management, and modern deployment practices.
 
 ## Quick Start
-- Run `npm i && npm start` for both client and server side to start the app
+
+1. **Set up environment variables** (see [Getting Started](#-getting-started) section for details)
+2. **Run `npm i && npm start`** for both client and server side to start the app
+3. **Configure Google OAuth** for local testing (see [Google OAuth Setup](#google-oauth-setup-for-local-testing) below)
 
 # 🎯 MERN Good Moments Project
 
@@ -65,7 +68,25 @@ This is a **Good Moments** application where users can:
    cd mern-memories-project
    ```
 
-2. **Install dependencies**
+2. **Set up environment variables**
+
+   Create a `.env` file in the `client` directory:
+   ```env
+   REACT_APP_API_URL=http://localhost:5000
+   REACT_APP_GOOGLE_CLIENT_ID=your-google-client-id-here
+   ```
+   
+   Create a `.env` file in the `server` directory:
+   ```env
+   PORT=5000
+   CONNECTION_URL=your-mongodb-connection-string
+   JWT_SECRET=your-jwt-secret-key
+   FRONTEND_URL=http://localhost:3001
+   ```
+   
+   **Note**: Get your `REACT_APP_GOOGLE_CLIENT_ID` from [Google Cloud Console](https://console.cloud.google.com/apis/credentials) after creating an OAuth 2.0 Client ID.
+
+3. **Install dependencies**
    ```bash
    # Install server dependencies
    cd server
@@ -76,7 +97,7 @@ This is a **Good Moments** application where users can:
    npm install
    ```
 
-3. **Start the application**
+4. **Start the application**
    ```bash
    # Start server (Terminal 1)
    cd server
@@ -87,9 +108,42 @@ This is a **Good Moments** application where users can:
    npm start
    ```
 
-4. **Access the application**
-   - Frontend: http://localhost:3000
+5. **Access the application**
+   - Frontend: http://localhost:3000 (or http://localhost:3001 depending on port availability)
    - Backend API: http://localhost:5000
+
+### Google OAuth Setup (For Local Testing)
+
+To enable Google Sign-In functionality in local development:
+
+1. **Go to Google Cloud Console**
+   - Direct link: **https://console.cloud.google.com/apis/credentials**
+   - Or navigate: https://console.cloud.google.com → Select your project → APIs & Services → Credentials
+
+2. **Configure OAuth 2.0 Client ID**
+   - Click on your existing OAuth 2.0 Client ID (or create one if you don't have it)
+   - Under **"Authorized JavaScript origins"**, click **"+ ADD URI"** and add:
+     ```
+     http://localhost:3001
+     ```
+     (Note: Use `http://localhost:3000` if your app runs on port 3000)
+
+3. **Add Redirect URI**
+   - Under **"Authorized redirect URIs"**, click **"+ ADD URI"** and add:
+     ```
+     http://localhost:3001/auth
+     ```
+     (Note: Use `http://localhost:3000/auth` if your app runs on port 3000)
+
+4. **Save and Wait**
+   - Click **"SAVE"** at the bottom
+   - Wait 1-2 minutes for changes to propagate
+   - Try Google Sign-In again
+
+**Common Error Fix**: If you see "Error 400: redirect_uri_mismatch", make sure:
+- The redirect URI exactly matches what's in Google Cloud Console (including http/https and trailing slashes)
+- You've saved the changes in Google Cloud Console
+- You've waited a few minutes after saving for changes to take effect
 
 ## 📱 Screenshots
 
@@ -128,6 +182,16 @@ Building this project helped me understand:
 - RESTful API design principles
 - Database modeling with MongoDB
 - Modern development workflow
+
+## 🔄 Keep Your App Alive 24/7
+
+**Important for Deployed Apps**: If you're using Render's free tier for backend, it spins down after 15 minutes of inactivity, causing slow load times.
+
+**FREE Solution**: Set up UptimeRobot to ping your backend every 5 minutes and keep it alive 24/7!
+
+👉 **See [KEEP_ALIVE_SETUP.md](./KEEP_ALIVE_SETUP.md) for 2-minute setup guide**
+
+This ensures your app loads instantly for visitors and recruiters!
 
 ## 🎉 Future Enhancements
 

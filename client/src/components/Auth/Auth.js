@@ -229,20 +229,11 @@ const SignUp = () => {
         token: authData.token // JWT token from our backend
       };
       
-      // Save to localStorage immediately
+      // Save to localStorage immediately - this is all we need before redirect
       localStorage.setItem('profile', JSON.stringify(profileData));
       
-      // Verify it was saved correctly
-      const verifySaved = localStorage.getItem('profile');
-      if (!verifySaved) {
-        throw new Error('Failed to save to localStorage!');
-      }
-      
-      // Dispatch to Redux store
-      dispatch({ type: AUTH, data: profileData });
-      
-      // Use window.location.href for immediate and reliable redirect
-      // This ensures the redirect happens immediately after successful login
+      // Redirect IMMEDIATELY after saving - no delays, no verification, no Redux dispatch
+      // The new page will read from localStorage and initialize Redux properly on load
       window.location.href = '/posts';
 
       return;
@@ -385,43 +376,41 @@ const SignUp = () => {
           <>
             <Button 
               className={classes.googleButton} 
-              color="primary" 
               fullWidth 
               onClick={handleGoogleLogin}
               startIcon={<Icon />} 
-              variant="contained"
+              variant="outlined"
             >
-              Google Sign In
+              Sign in with Google
             </Button>
-            {!isSignup && (
-              <Button 
-                variant="text"
-                color="primary"
-                style={{ 
-                  textAlign: 'center', 
-                  marginTop: '10px', 
-                  textTransform: 'none',
-                  textDecoration: 'underline',
-                  padding: '4px 8px'
-                }}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleOpenForgotPassword();
-                }}
-              >
-                Forgot Password?
-              </Button>
-            )}
           </>
         )}
-        <Grid container justify="flex-end">
-          <Grid item>
-            <Button onClick={switchMode} disabled={isLoading}>
-              { isSignup ? 'Already have an account? Sign in' : "Don't have an account? Sign Up" }
-            </Button>
-          </Grid>
-        </Grid>
+        <div className={classes.footerLinks}>
+          {!isSignup && !needsPassword && (
+            <Typography 
+              variant="body2" 
+              className={classes.linkText}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleOpenForgotPassword();
+              }}
+            >
+              Forgot password?
+            </Typography>
+          )}
+          <Typography 
+            variant="body2" 
+            className={classes.signUpLink}
+            onClick={switchMode}
+            style={{ cursor: isLoading ? 'not-allowed' : 'pointer', opacity: isLoading ? 0.6 : 1 }}
+          >
+            { isSignup ? 'Already have an account? ' : "Don't have an account? " }
+            <span className={classes.linkSpan}>
+              { isSignup ? 'Sign in' : 'Sign up' }
+            </span>
+          </Typography>
+        </div>
       </Paper>
 
       {/* Forgot Password Modal */}

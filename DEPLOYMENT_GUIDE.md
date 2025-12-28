@@ -254,6 +254,7 @@ Complete guide to deploy your MERN stack application for your resume.
 - [ ] Google OAuth updated with Vercel URL
 - [ ] All features tested
 - [ ] Links working correctly
+- [ ] **Keep-Alive Service Setup** (UptimeRobot) - See [KEEP_ALIVE_SETUP.md](./KEEP_ALIVE_SETUP.md)
 
 ---
 
@@ -279,7 +280,8 @@ Add these links to your resume:
 - ⚠️ Free tier spins down after 15 minutes of inactivity
 - ✅ Auto-wakes up on first request (may take 30-60 seconds)
 - ✅ 750 hours/month free
-- 💰 Consider paid tier ($7/month) for always-on service
+- 🔄 **FREE SOLUTION**: Use UptimeRobot to keep backend alive 24/7 (see [KEEP_ALIVE_SETUP.md](./KEEP_ALIVE_SETUP.md))
+- 💰 Consider paid tier ($7/month) for always-on service (optional)
 
 ### MongoDB Atlas
 - ✅ 512 MB free storage
@@ -292,6 +294,8 @@ Add these links to your resume:
 
 ### Issue 1: Backend takes long to respond
 **Solution**: Render free tier spins down. First request takes 30-60 seconds to wake up.
+- **FREE FIX**: Set up UptimeRobot to ping your backend every 5 minutes (see [KEEP_ALIVE_SETUP.md](./KEEP_ALIVE_SETUP.md))
+- This keeps your backend awake 24/7 for free!
 
 ### Issue 2: CORS errors
 **Solution**: Check `server/index.js` has:
@@ -314,9 +318,10 @@ app.use(cors());
 
 ## 💡 Pro Tips
 
-1. **Always-On Service**: Consider Render's $7/month plan to keep backend always running
-2. **Custom Domain**: Add custom domain on Vercel (looks more professional)
-3. **Monitor**: Check Render and Vercel dashboards for errors
+1. **Keep Backend Alive (FREE)**: Set up UptimeRobot to ping your backend every 5 minutes - keeps it awake 24/7! See [KEEP_ALIVE_SETUP.md](./KEEP_ALIVE_SETUP.md) for 2-minute setup guide.
+2. **Always-On Service (Optional)**: Consider Render's $7/month plan if you don't want to use keep-alive service
+3. **Custom Domain**: Add custom domain on Vercel (looks more professional)
+4. **Monitor**: Check Render and Vercel dashboards for errors
 4. **Backup**: Keep `.env` files locally (never commit to GitHub!) 
 
 ---
