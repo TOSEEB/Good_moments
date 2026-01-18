@@ -78,12 +78,19 @@ const connectDB = async () => {
   }
 };
 
-// Routes MUST be mounted before database middleware for proper path matching
-// Mount routes at multiple paths to handle both local dev and Vercel rewrites
+// Request logging middleware FIRST
+app.use((req, res, next) => {
+  console.log(`📥 [${new Date().toISOString()}] ${req.method} ${req.path} | URL: ${req.url} | Original: ${req.originalUrl}`);
+  next();
+});
+
+// Routes MUST be mounted in order - ALL paths registered for maximum compatibility
+console.log('🔧 Registering routes...');
 app.use('/posts', postRoutes);
 app.use('/user', userRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/user', userRoutes);
+console.log('✅ Routes registered at: /posts, /user, /api/posts, /api/user');
 
 // For Vercel serverless functions - connect on first request
 app.use(async (req, res, next) => {
@@ -97,6 +104,18 @@ app.use(async (req, res, next) => {
     // Continue without DB (for development/testing)
     next();
   }
+});
+
+// 404 handler - catch unmatched routes (MUST be last)
+app.use('*', (req, res) => {
+  console.error(`❌ 404 - Route not found: ${req.method} ${req.originalUrl || req.url}`);
+  res.status(404).json({ 
+    message: 'Route not found', 
+    path: req.path, 
+    url: req.url,
+    originalUrl: req.originalUrl,
+    method: req.method 
+  });
 });
 
 // Export app for Vercel serverless functions
