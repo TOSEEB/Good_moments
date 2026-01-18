@@ -4,5 +4,6 @@
 import app from '../server/index.js';
 
 // Vercel expects a default export for serverless functions
+// When Vercel rewrites /api/* to this function, the path is preserved
 export default app;
 

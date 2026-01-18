@@ -78,19 +78,30 @@ const connectDB = async () => {
   }
 };
 
-// Request logging middleware FIRST
+// Request logging middleware FIRST (before OPTIONS to see all requests)
 app.use((req, res, next) => {
   console.log(`📥 [${new Date().toISOString()}] ${req.method} ${req.path} | URL: ${req.url} | Original: ${req.originalUrl}`);
   next();
 });
 
+// Handle OPTIONS preflight requests explicitly (but let routes handle actual requests)
+app.options('*', (req, res) => {
+  console.log(`🔵 OPTIONS request: ${req.method} ${req.url}`);
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.sendStatus(200);
+});
+
 // Routes MUST be mounted in order - ALL paths registered for maximum compatibility
+// IMPORTANT: Register /api/* routes FIRST for Vercel serverless functions
 console.log('🔧 Registering routes...');
-app.use('/posts', postRoutes);
-app.use('/user', userRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/user', userRoutes);
-console.log('✅ Routes registered at: /posts, /user, /api/posts, /api/user');
+// Then register non-prefixed routes (for local dev and compatibility)
+app.use('/posts', postRoutes);
+app.use('/user', userRoutes);
+console.log('✅ Routes registered at: /api/posts, /api/user, /posts, /user');
 
 // For Vercel serverless functions - connect on first request
 app.use(async (req, res, next) => {
@@ -109,12 +120,14 @@ app.use(async (req, res, next) => {
 // 404 handler - catch unmatched routes (MUST be last)
 app.use('*', (req, res) => {
   console.error(`❌ 404 - Route not found: ${req.method} ${req.originalUrl || req.url}`);
+  console.error(`   Path: ${req.path}, URL: ${req.url}, Original: ${req.originalUrl}`);
   res.status(404).json({ 
     message: 'Route not found', 
     path: req.path, 
     url: req.url,
     originalUrl: req.originalUrl,
-    method: req.method 
+    method: req.method,
+    availableRoutes: ['/api/user/signup', '/api/user/signin', '/api/user/google', '/api/posts']
   });
 });
 

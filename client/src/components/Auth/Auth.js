@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { Avatar, Button, Paper, Grid, Typography, Container, Dialog, DialogTitle, DialogContent, DialogActions, TextField, CircularProgress } from '@material-ui/core';
 import { useHistory } from 'react-router-dom';
@@ -151,6 +151,9 @@ const SignUp = () => {
 
   const googleErrorHandler = (error) => {
     // Google Sign In was unsuccessful
+    console.error('Google OAuth error:', error);
+    setErrorMessage(error?.error_description || error?.message || 'Google sign-in failed. Please try again.');
+    setIsLoading(false);
   };
 
   const googleSuccess = async (codeResponse) => {
@@ -187,7 +190,10 @@ const SignUp = () => {
         throw new Error('API URL not configured');
       }
       
-      const authResponse = await fetch(`${API_BASE_URL}/user/google`, {
+      const apiUrl = `${API_BASE_URL}/user/google`;
+      console.log('Calling API:', apiUrl);
+      
+      const authResponse = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -201,8 +207,15 @@ const SignUp = () => {
       });
       
       if (!authResponse.ok) {
-        const errorData = await authResponse.json();
-        throw new Error(errorData.message || 'Authentication failed');
+        const errorText = await authResponse.text();
+        let errorData;
+        try {
+          errorData = JSON.parse(errorText);
+        } catch (e) {
+          errorData = { message: errorText || `HTTP ${authResponse.status}: ${authResponse.statusText}` };
+        }
+        console.error('API Error:', authResponse.status, errorData);
+        throw new Error(errorData.message || `Authentication failed (${authResponse.status})`);
       }
       
       const authData = await authResponse.json();
@@ -230,6 +243,9 @@ const SignUp = () => {
       return;
       
     } catch (error) {
+      console.error('Google OAuth flow error:', error);
+      setErrorMessage(error.message || 'Authentication failed. Please try again.');
+      setIsLoading(false);
       googleErrorHandler(error);
     }
   };
@@ -239,16 +255,25 @@ const SignUp = () => {
     onError: googleErrorHandler,
     flow: 'implicit',
     select_account: true,
-    ux_mode: 'popup',
+    ux_mode: 'redirect', // Using redirect mode to completely avoid COOP/window.closed issues
   });
+
+  // Handle redirect callback when user returns from Google
+  useEffect(() => {
+    // The useGoogleLogin hook with redirect mode automatically handles the callback
+    // when the component mounts after redirect, so we don't need extra logic here
+    // The onSuccess callback will be triggered automatically
+  }, []);
 
   const handleGoogleLogin = (e) => {
     e.preventDefault();
     e.stopPropagation();
     
     try {
+      setIsLoading(true);
       login();
     } catch (error) {
+      setIsLoading(false);
       googleErrorHandler(error);
     }
   };
