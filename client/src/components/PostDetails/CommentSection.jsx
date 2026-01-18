@@ -6,7 +6,6 @@ import { commentPost } from '../../actions/posts';
 import useStyles from './styles';
 
 const CommentSection = ({ post }) => {
-  const user = JSON.parse(localStorage.getItem('profile'));
   const [comment, setComment] = useState('');
   const dispatch = useDispatch();
   const [comments, setComments] = useState(post?.comments);

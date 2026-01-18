@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
 import { Avatar, Button, Paper, Grid, Typography, Container, CircularProgress } from '@material-ui/core';
 import { useHistory, useLocation } from 'react-router-dom';
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 
-import { setPasswordForGoogleUser } from '../../actions/auth';
 import useStyles from './styles';
 import Input from './Input';
 
@@ -16,8 +14,6 @@ const SetPassword = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [token, setToken] = useState('');
   const [email, setEmail] = useState('');
-  
-  const dispatch = useDispatch();
   const history = useHistory();
   const location = useLocation();
   const classes = useStyles();
@@ -155,7 +151,7 @@ const SetPassword = () => {
           For: {email}
         </Typography>
         <Typography variant="caption" style={{ display: 'block', marginTop: '5px', textAlign: 'center', padding: '5px', color: '#999', fontSize: '0.75rem' }}>
-          ⚠️ For security, please don't share this page. Link expires in 1 hour.
+          <span role="img" aria-label="warning">⚠️</span> For security, please don't share this page. Link expires in 1 hour.
         </Typography>
         {successMessage && (
           <Typography variant="body2" color="primary" style={{ marginTop: '10px', textAlign: 'center', padding: '10px' }}>

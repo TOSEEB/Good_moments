@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Paper, Typography, CircularProgress, Divider } from '@material-ui/core/';
 import { useDispatch, useSelector } from 'react-redux';
 import moment from 'moment';
@@ -19,7 +19,7 @@ const Post = () => {
   const postFromList = posts?.find((p) => p._id === id);
   
   // Try to get cached post from sessionStorage for instant display
-  const [cachedPost, setCachedPost] = useState(() => {
+  const cachedPost = useMemo(() => {
     try {
       const cached = sessionStorage.getItem(`post_${id}`);
       if (cached) {
@@ -33,7 +33,7 @@ const Post = () => {
       // Ignore cache errors
     }
     return null;
-  });
+  }, [id]);
   
   // Use cached post or post from list or Redux post (priority order)
   const displayPost = post || cachedPost || postFromList;
@@ -78,7 +78,8 @@ const Post = () => {
         dispatch(getPost(id));
       }
     }
-  }, [id, dispatch, userResult]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, dispatch, userResult]); // displayPost is intentionally excluded - we want to load fresh data regardless
 
   // Load related posts AFTER showing main post (don't block UI)
   useEffect(() => {

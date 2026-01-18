@@ -6,7 +6,7 @@ import { useGoogleLogin } from '@react-oauth/google';
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 
 import Icon from './icon';
-import { signin, signup, setPasswordForGoogleUser } from '../../actions/auth';
+import { signin, signup } from '../../actions/auth';
 import { AUTH } from '../../constants/actionTypes';
 import useStyles from './styles';
 import Input from './Input';
@@ -17,7 +17,6 @@ const SignUp = () => {
   const [form, setForm] = useState(initialState);
   const [isSignup, setIsSignup] = useState(false);
   const [needsPassword, setNeedsPassword] = useState(false);
-  const [passwordMessage, setPasswordMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
@@ -39,14 +38,12 @@ const SignUp = () => {
     setIsSignup((prevIsSignup) => !prevIsSignup);
     setShowPassword(false);
     setNeedsPassword(false);
-    setPasswordMessage('');
     setErrorMessage('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage('');
-    setPasswordMessage('');
     setNeedsPassword(false);
 
     if (isSignup) {
@@ -66,10 +63,6 @@ const SignUp = () => {
         if (result && result.needsPassword) {
           setIsLoading(false);
           setNeedsPassword(true);
-          const message = result.emailSent 
-            ? "We've sent you an email with a link to set your password. Please check your inbox and click the link."
-            : result.message || 'This account was created with Google login. We\'ve sent you an email with a link to set your password.';
-          setPasswordMessage(message);
           return;
         }
         // If successful, signin action will redirect
@@ -80,11 +73,6 @@ const SignUp = () => {
         // Check if error response indicates password needs to be set (email sent)
         if (error.response?.data?.needsPassword) {
           setNeedsPassword(true);
-          const emailSent = error.response.data.emailSent;
-          const message = emailSent
-            ? "We've sent you an email with a link to set your password. Please check your inbox and click the link."
-            : error.response.data.message || 'This account was created with Google login. We\'ve sent you an email with a link to set your password.';
-          setPasswordMessage(message);
         } else {
           setErrorMessage(error.response?.data?.message || 'Failed to sign in. Please check your credentials.');
         }
@@ -356,7 +344,6 @@ const SignUp = () => {
               color="primary"
               onClick={() => {
                 setNeedsPassword(false);
-                setPasswordMessage('');
                 setErrorMessage('');
               }}
               style={{ marginBottom: '10px' }}
