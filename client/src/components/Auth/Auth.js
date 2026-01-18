@@ -215,6 +215,9 @@ const SignUp = () => {
           errorData = { message: errorText || `HTTP ${authResponse.status}: ${authResponse.statusText}` };
         }
         console.error('API Error:', authResponse.status, errorData);
+        console.error('Full error response:', errorText);
+        console.error('Response headers:', Object.fromEntries(authResponse.headers.entries()));
+        // Log the full error details to help debug
         throw new Error(errorData.message || `Authentication failed (${authResponse.status})`);
       }
       
