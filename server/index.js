@@ -47,6 +47,17 @@ app.get('/', (req, res) => {
   });
 });
 
+// Test route to verify routing works
+app.all('/api/test', (req, res) => {
+  res.json({
+    method: req.method,
+    path: req.path,
+    url: req.url,
+    originalUrl: req.originalUrl,
+    message: 'Test route working!'
+  });
+});
+
 const CONNECTION_URL = process.env.MONGODB_URL;
 
 // Serverless-friendly MongoDB connection (singleton pattern)
@@ -80,7 +91,12 @@ const connectDB = async () => {
 
 // Request logging middleware FIRST (before OPTIONS to see all requests)
 app.use((req, res, next) => {
-  console.log(`📥 [${new Date().toISOString()}] ${req.method} ${req.path} | URL: ${req.url} | Original: ${req.originalUrl}`);
+  // Log all request details for debugging
+  console.log(`📥 [${new Date().toISOString()}] ${req.method}`);
+  console.log(`   Path: ${req.path}`);
+  console.log(`   URL: ${req.url}`);
+  console.log(`   Original: ${req.originalUrl}`);
+  console.log(`   Base URL: ${req.baseUrl || 'none'}`);
   next();
 });
 

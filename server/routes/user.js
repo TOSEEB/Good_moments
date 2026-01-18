@@ -9,9 +9,19 @@ router.use((req, res, next) => {
   next();
 });
 
-router.post("/signin", signin);
-router.post("/signup", signup);
-router.post("/google", googleAuth);
+// Ensure all methods are explicitly handled
+router.post("/signin", (req, res, next) => {
+  console.log(`✅ POST /signin route handler called`);
+  signin(req, res, next);
+});
+router.post("/signup", (req, res, next) => {
+  console.log(`✅ POST /signup route handler called`);
+  signup(req, res, next);
+});
+router.post("/google", (req, res, next) => {
+  console.log(`✅ POST /google route handler called`);
+  googleAuth(req, res, next);
+});
 router.post("/request-password-setup", requestPasswordSetup);
 router.post("/forgot-password", forgotPassword);
 router.post("/verify-token-set-password", verifyTokenAndSetPassword);
