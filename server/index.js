@@ -47,12 +47,6 @@ app.get('/', (req, res) => {
   });
 });
 
-app.use('/posts', postRoutes);
-app.use('/user', userRoutes);
-// Also mount at /api prefix for Vercel serverless (rewrites preserve /api)
-app.use('/api/posts', postRoutes);
-app.use('/api/user', userRoutes);
-
 const CONNECTION_URL = process.env.MONGODB_URL;
 
 // Serverless-friendly MongoDB connection (singleton pattern)
@@ -83,6 +77,12 @@ const connectDB = async () => {
     throw error;
   }
 };
+
+// Routes MUST be mounted before database middleware for proper path matching
+app.use('/posts', postRoutes);
+app.use('/user', userRoutes);
+app.use('/api/posts', postRoutes);
+app.use('/api/user', userRoutes);
 
 // For Vercel serverless functions - connect on first request
 app.use(async (req, res, next) => {
