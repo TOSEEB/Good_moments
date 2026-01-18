@@ -4,13 +4,17 @@
 import app from '../server/index.js';
 
 // Vercel serverless function handler
-// Vercel passes the request with the full path including /api prefix
+// When Vercel rewrites /api/* to this function, Express receives the full path
+// Our routes are registered at both /api/user and /user, so both should work
 export default async (req, res) => {
   // Log incoming request for debugging
-  console.log(`🔵 Serverless Function: ${req.method} ${req.url || req.path}`);
+  console.log(`🔵 Serverless Function Entry: ${req.method}`);
+  console.log(`   URL: ${req.url}`);
+  console.log(`   Path: ${req.path}`);
+  console.log(`   Original URL: ${req.originalUrl}`);
   
-  // Ensure the path is preserved correctly
-  // Vercel should pass /api/user/google as req.url
+  // Pass request directly to Express app
+  // Express will match routes at /api/user/* (registered first) or /user/*
   return app(req, res);
 };
 
