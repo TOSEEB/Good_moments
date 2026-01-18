@@ -13,28 +13,22 @@
       "use": "@vercel/node"
     }
   ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/client/$1"
-    }
-  ],
   "rewrites": [
     {
+      "source": "/api/(.*)",
+      "destination": "/api/index.js"
+    },
+    {
       "source": "/posts/(.*)",
-      "destination": "/api/posts/$1"
+      "destination": "/api/index.js"
     },
     {
       "source": "/user/(.*)",
-      "destination": "/api/user/$1"
+      "destination": "/api/index.js"
     },
     {
       "source": "/(.*)",
-      "destination": "/client/$1"
+      "destination": "/index.html"
     }
   ],
   "headers": [
