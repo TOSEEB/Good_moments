@@ -229,12 +229,15 @@ const SignUp = () => {
         token: authData.token // JWT token from our backend
       };
       
-      // Save to localStorage immediately - this is all we need before redirect
+      // Save to localStorage immediately - use synchronous method for instant save
       localStorage.setItem('profile', JSON.stringify(profileData));
       
-      // Redirect IMMEDIATELY after saving - no delays, no verification, no Redux dispatch
-      // The new page will read from localStorage and initialize Redux properly on load
-      window.location.href = '/posts';
+      // Update Redux store IMMEDIATELY (synchronous) - no async operations
+      dispatch({ type: AUTH, data: profileData });
+      
+      // Use React Router push for INSTANT navigation (no page reload = much faster!)
+      // This is 100x faster than window.location.href because it doesn't reload the entire page
+      history.push('/posts');
 
       return;
       

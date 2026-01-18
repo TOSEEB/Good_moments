@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Grid, Typography } from '@material-ui/core';
 import { Skeleton } from '@material-ui/lab';
 import { useSelector } from 'react-redux';
@@ -25,7 +25,16 @@ const SkeletonPost = () => (
 const Posts = ({ setCurrentId }) => {
   const { posts, isLoading } = useSelector((state) => state.posts);
   const classes = useStyles();
-  const user = JSON.parse(localStorage.getItem('profile'));
+  
+  // Memoize user check to avoid repeated localStorage reads
+  const user = useMemo(() => {
+    try {
+      const profile = localStorage.getItem('profile');
+      return profile ? JSON.parse(profile) : null;
+    } catch (error) {
+      return null;
+    }
+  }, []);
 
   if (!user?.result) {
     return (

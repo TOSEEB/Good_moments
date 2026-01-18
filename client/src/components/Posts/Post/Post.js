@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Card, CardActions, CardContent, CardMedia, Button, Typography, ButtonBase } from '@material-ui/core/';
 import ThumbUpAltIcon from '@material-ui/icons/ThumbUpAlt';
 import DeleteIcon from '@material-ui/icons/Delete';
@@ -11,18 +11,16 @@ import { useHistory } from 'react-router-dom';
 import { likePost, deletePost } from '../../../actions/posts';
 import useStyles from './styles';
 
-const Post = ({ post, setCurrentId }) => {
-  // Get user from localStorage safely
-  const getUser = () => {
+const Post = React.memo(({ post, setCurrentId }) => {
+  // Memoize user to avoid repeated localStorage reads on every render
+  const user = useMemo(() => {
     try {
       const profile = localStorage.getItem('profile');
       return profile ? JSON.parse(profile) : null;
     } catch (error) {
       return null;
     }
-  };
-
-  const user = getUser();
+  }, []);
   const dispatch = useDispatch();
   const history = useHistory();
   const classes = useStyles();
@@ -111,5 +109,7 @@ const Post = ({ post, setCurrentId }) => {
     </Card>
   );
 };
+
+});
 
 export default Post;

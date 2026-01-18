@@ -8,7 +8,42 @@ if (!API_BASE_URL) {
   throw new Error('REACT_APP_API_URL is required. Please add it to your .env file.');
 }
 
-const API = axios.create({ baseURL: API_BASE_URL });
+const API = axios.create({ 
+  baseURL: API_BASE_URL,
+  // Add request timeout for faster failure detection
+  timeout: 10000, // 10 seconds
+});
+
+// Simple in-memory cache for GET requests (5 minutes TTL)
+const cache = new Map();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+const getCacheKey = (url, params) => {
+  return `${url}?${new URLSearchParams(params).toString()}`;
+};
+
+const getCachedResponse = (url, params) => {
+  const key = getCacheKey(url, params);
+  const cached = cache.get(key);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.data;
+  }
+  cache.delete(key);
+  return null;
+};
+
+const setCachedResponse = (url, params, data) => {
+  const key = getCacheKey(url, params);
+  cache.set(key, { data, timestamp: Date.now() });
+};
+
+// Clear cache on POST/PATCH/DELETE to ensure fresh data
+const clearRelevantCache = (url) => {
+  // Clear all post-related cache when posts are modified
+  if (url.includes('/posts')) {
+    cache.clear();
+  }
+};
 
 API.interceptors.request.use((req) => {
   if (localStorage.getItem('profile')) {
@@ -84,20 +119,82 @@ API.interceptors.response.use(
 );
 
 
-export const fetchPost = (id) => API.get(`/posts/${id}`);
-export const fetchPosts = (page) => API.get(`/posts?page=${page}`);
-export const fetchPostsByCreator = (name) => API.get(`/posts/creator?name=${name}`);
-export const fetchPostsBySearch = (searchQuery) => API.get('/posts/search', {
-  params: {
+// GET requests with caching
+export const fetchPost = async (id) => {
+  const url = `/posts/${id}`;
+  const cached = getCachedResponse(url, {});
+  if (cached) {
+    return { data: cached }; // Return in same format as axios response
+  }
+  const response = await API.get(url);
+  setCachedResponse(url, {}, response.data);
+  return response;
+};
+
+export const fetchPosts = async (page) => {
+  const url = '/posts';
+  const params = { page };
+  const cached = getCachedResponse(url, params);
+  if (cached) {
+    return { data: cached };
+  }
+  const response = await API.get(url, { params });
+  setCachedResponse(url, params, response.data);
+  return response;
+};
+
+export const fetchPostsByCreator = async (name) => {
+  const url = '/posts/creator';
+  const params = { name };
+  const cached = getCachedResponse(url, params);
+  if (cached) {
+    return { data: cached };
+  }
+  const response = await API.get(url, { params });
+  setCachedResponse(url, params, response.data);
+  return response;
+};
+
+export const fetchPostsBySearch = async (searchQuery) => {
+  const url = '/posts/search';
+  const params = {
     searchQuery: searchQuery.search || 'none',
     tags: searchQuery.tags || ''
+  };
+  const cached = getCachedResponse(url, params);
+  if (cached) {
+    return { data: cached };
   }
-});
-export const createPost = (newPost) => API.post('/posts', newPost);
-export const likePost = (id) => API.patch(`/posts/${id}/likePost`);
-export const comment = (value, id) => API.post(`/posts/${id}/commentPost`, { value });
-export const updatePost = (id, updatedPost) => API.patch(`/posts/${id}`, updatedPost);
-export const deletePost = (id) => API.delete(`/posts/${id}`);
+  const response = await API.get(url, { params });
+  setCachedResponse(url, params, response.data);
+  return response;
+};
+
+// POST/PATCH/DELETE - clear cache and don't cache responses
+export const createPost = async (newPost) => {
+  clearRelevantCache('/posts');
+  return API.post('/posts', newPost);
+};
+
+export const likePost = async (id) => {
+  clearRelevantCache('/posts');
+  return API.patch(`/posts/${id}/likePost`);
+};
+
+export const comment = async (value, id) => {
+  clearRelevantCache('/posts');
+  return API.post(`/posts/${id}/commentPost`, { value });
+};
+
+export const updatePost = async (id, updatedPost) => {
+  clearRelevantCache('/posts');
+  return API.patch(`/posts/${id}`, updatedPost);
+};
+
+export const deletePost = async (id) => {
+  clearRelevantCache('/posts');
+  return API.delete(`/posts/${id}`);
+};
 
 export const signIn = (formData) => API.post('/user/signin', formData);
 export const signUp = (formData) => API.post('/user/signup', formData);

@@ -149,8 +149,8 @@ const Form = ({ currentId, setCurrentId }) => {
           )}
         </Button>
         <Button 
+          className={classes.buttonClear}
           variant="contained" 
-          color="secondary" 
           size="small" 
           onClick={clear} 
           fullWidth

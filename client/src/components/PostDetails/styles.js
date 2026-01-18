@@ -2,33 +2,39 @@ import { makeStyles } from '@material-ui/core/styles';
 
 export default makeStyles((theme) => ({
   media: {
-    borderRadius: '20px',
+    borderRadius: 24,
     objectFit: 'cover',
     width: '100%',
     maxHeight: '600px',
-
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
   },
   card: {
     display: 'flex',
     width: '100%',
+    background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.9) 100%)',
+    backdropFilter: 'blur(10px)',
+    borderRadius: 24,
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
+    border: '1px solid rgba(255, 255, 255, 0.5)',
+    overflow: 'hidden',
     [theme.breakpoints.down('sm')]: {
       flexWrap: 'wrap',
       flexDirection: 'column',
-      // On mobile: image first, then section below
     },
     [theme.breakpoints.up('md')]: {
-      // On desktop: section first, then image on right
       flexDirection: 'row',
     },
   },
   section: {
-    borderRadius: '20px',
-    margin: '10px',
+    borderRadius: 24,
+    margin: '16px',
     flex: 1,
-    order: 1, // On desktop, section comes first (left side)
+    order: 1,
+    padding: theme.spacing(3),
     [theme.breakpoints.down('sm')]: {
-      margin: '5px',
-      order: 2, // On mobile, section comes second (below image)
+      margin: '12px',
+      order: 2,
+      padding: theme.spacing(2),
     },
   },
   imageSection: {
@@ -47,12 +53,15 @@ export default makeStyles((theme) => ({
     },
   },
   recommendedPost: {
-    margin: '20px',
+    margin: '16px',
     cursor: 'pointer',
-    padding: '15px',
-    borderRadius: '10px',
-    border: '1px solid #e0e0e0',
-    transition: 'transform 0.2s ease-in-out',
+    padding: '20px',
+    borderRadius: 20,
+    background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.9) 100%)',
+    backdropFilter: 'blur(10px)',
+    border: '1px solid rgba(255, 255, 255, 0.5)',
+    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
     width: '250px',
     height: '280px',
     display: 'flex',
@@ -61,11 +70,11 @@ export default makeStyles((theme) => ({
     [theme.breakpoints.down('sm')]: {
       width: '100%',
       maxWidth: '300px',
-      margin: '10px auto',
+      margin: '12px auto',
     },
     '&:hover': {
-      transform: 'translateY(-2px)',
-      boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+      transform: 'translateY(-8px)',
+      boxShadow: '0 12px 40px rgba(0, 0, 0, 0.15)',
     },
   },
   recommendedImage: {
@@ -118,9 +127,12 @@ export default makeStyles((theme) => ({
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: '20px',
-    borderRadius: '15px',
+    padding: '40px',
+    borderRadius: 24,
     height: '39vh',
+    background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.9) 100%)',
+    backdropFilter: 'blur(10px)',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
   },
   commentsOuterContainer: {
     display: 'flex',

@@ -4,22 +4,59 @@ import { makeStyles } from '@material-ui/core/styles';
 export default makeStyles((theme) => ({
   root: {
     '& .MuiTextField-root': {
-      margin: theme.spacing(1),
+      margin: theme.spacing(1.5, 0),
+    },
+    '& .MuiOutlinedInput-root': {
+      borderRadius: 12,
+      '&:hover .MuiOutlinedInput-notchedOutline': {
+        borderColor: theme.palette.primary.main,
+      },
     },
   },
   paper: {
-    padding: theme.spacing(2),
+    padding: theme.spacing(3),
+    background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.9) 100%)',
+    backdropFilter: 'blur(10px)',
+    borderRadius: 20,
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
+    border: '1px solid rgba(255, 255, 255, 0.5)',
   },
   form: {
     display: 'flex',
     flexWrap: 'wrap',
     justifyContent: 'center',
+    gap: theme.spacing(2),
   },
   fileInput: {
-    width: '97%',
-    margin: '10px 0',
+    width: '100%',
+    margin: theme.spacing(1.5, 0),
   },
   buttonSubmit: {
-    marginBottom: 10,
+    marginTop: theme.spacing(2),
+    marginBottom: theme.spacing(1),
+    background: 'linear-gradient(135deg, #00D4AA 0%, #00A888 100%)',
+    color: '#fff',
+    fontWeight: 600,
+    borderRadius: 12,
+    padding: '12px 32px',
+    boxShadow: '0 4px 14px 0 rgba(0, 212, 170, 0.3)',
+    '&:hover': {
+      background: 'linear-gradient(135deg, #00A888 0%, #00D4AA 100%)',
+      boxShadow: '0 6px 20px 0 rgba(0, 212, 170, 0.4)',
+    },
+  },
+  buttonClear: {
+    marginTop: theme.spacing(2),
+    marginBottom: theme.spacing(1),
+    background: 'linear-gradient(135deg, #FF6B6B 0%, #E55555 100%)',
+    color: '#fff',
+    fontWeight: 600,
+    borderRadius: 12,
+    padding: '12px 32px',
+    boxShadow: '0 4px 14px 0 rgba(255, 107, 107, 0.3)',
+    '&:hover': {
+      background: 'linear-gradient(135deg, #E55555 0%, #FF6B6B 100%)',
+      boxShadow: '0 6px 20px 0 rgba(255, 107, 107, 0.4)',
+    },
   },
 }));

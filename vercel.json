@@ -1,8 +1,40 @@
 {
+  "version": 2,
+  "builds": [
+    {
+      "src": "client/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "build"
+      }
+    },
+    {
+      "src": "api/index.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/index.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/client/$1"
+    }
+  ],
   "rewrites": [
     {
+      "source": "/posts/(.*)",
+      "destination": "/api/posts/$1"
+    },
+    {
+      "source": "/user/(.*)",
+      "destination": "/api/user/$1"
+    },
+    {
       "source": "/(.*)",
-      "destination": "/index.html"
+      "destination": "/client/$1"
     }
   ],
   "headers": [

@@ -30,22 +30,71 @@ app.use('/posts', postRoutes);
 app.use('/user', userRoutes);
 
 const CONNECTION_URL = process.env.MONGODB_URL;
+
+// Serverless-friendly MongoDB connection (singleton pattern)
+let cachedConnection = null;
+
+const connectDB = async () => {
+  if (cachedConnection) {
+    return cachedConnection;
+  }
+
+  if (!CONNECTION_URL) {
+    console.error('❌ ERROR: MONGODB_URL is not defined in environment variables.');
+    throw new Error('MONGODB_URL is required');
+  }
+
+  try {
+    const connection = await mongoose.connect(CONNECTION_URL, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+    });
+    cachedConnection = connection;
+    console.log('✅ Connected to MongoDB');
+    return connection;
+  } catch (error) {
+    console.error('⚠️ MongoDB connection failed:', error.message);
+    throw error;
+  }
+};
+
+// For Vercel serverless functions - connect on first request
+app.use(async (req, res, next) => {
+  try {
+    if (!cachedConnection) {
+      await connectDB();
+    }
+    next();
+  } catch (error) {
+    console.error('Database connection error:', error);
+    // Continue without DB (for development/testing)
+    next();
+  }
+});
+
+// Export app for Vercel serverless functions
+export default app;
+
+// For local development - start server when run directly (not via Vercel)
+// Vercel doesn't have VERCEL env var set during build, so we check if PORT is explicitly set for local dev
 const PORT = process.env.PORT || 5000;
 
-if (!CONNECTION_URL) {
-  console.error('❌ ERROR: MONGODB_URL is not defined in environment variables.');
-  console.error('Please create a .env file in the server directory with MONGODB_URL');
-  process.exit(1);
+// Only start server if not running as serverless function
+// Vercel serverless functions don't need app.listen()
+if (process.env.VERCEL !== '1' && !process.env.VERCEL_ENV) {
+  connectDB()
+    .then(() => {
+      app.listen(PORT, () => {
+        console.log(`🚀 Server Running on Port: ${PORT}`);
+      });
+    })
+    .catch((error) => {
+      console.log('⚠️ MongoDB connection failed, starting server without database');
+      console.log('Error:', error.message);
+      app.listen(PORT, () => {
+        console.log(`🚀 Server Running on Port: ${PORT} (No DB)`);
+      });
+    });
 }
-
-// Try to connect to MongoDB, but start server even if it fails
-mongoose.connect(CONNECTION_URL, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => {
-    console.log('✅ Connected to MongoDB');
-    app.listen(PORT, () => console.log(`🚀 Server Running on Port: ${PORT}`));
-  })
-  .catch((error) => {
-    console.log('⚠️ MongoDB connection failed, starting server without database');
-    console.log('Error:', error.message);
-    app.listen(PORT, () => console.log(`🚀 Server Running on Port: ${PORT} (No DB)`));
-  });

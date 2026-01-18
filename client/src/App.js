@@ -1,15 +1,24 @@
-import React from 'react';
-import { Container } from '@material-ui/core';
+import React, { Suspense, lazy, useMemo } from 'react';
+import { Container, CircularProgress, ThemeProvider } from '@material-ui/core';
 import { BrowserRouter, Switch, Route, Redirect } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import theme from './theme';
 
-import PostDetails from './components/PostDetails/PostDetails';
-import Navbar from './components/Navbar/Navbar';
-import Home from './components/Home/Home';
-import Auth from './components/Auth/Auth';
-import SetPassword from './components/Auth/SetPassword';
-import CreatorOrTag from './components/CreatorOrTag/CreatorOrTag';
+// Lazy load components for code splitting - dramatically reduces initial bundle size
+const PostDetails = lazy(() => import('./components/PostDetails/PostDetails'));
+const Navbar = lazy(() => import('./components/Navbar/Navbar'));
+const Home = lazy(() => import('./components/Home/Home'));
+const Auth = lazy(() => import('./components/Auth/Auth'));
+const SetPassword = lazy(() => import('./components/Auth/SetPassword'));
+const CreatorOrTag = lazy(() => import('./components/CreatorOrTag/CreatorOrTag'));
+
+// Lightweight loading fallback
+const LoadingFallback = () => (
+  <Container style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+    <CircularProgress />
+  </Container>
+);
 
 // React Scripts injects process.env variables at build time
 // REACT_APP_ prefix variables are automatically available
@@ -23,31 +32,25 @@ if (!GOOGLE_CLIENT_ID) {
 const App = () => {
   const user = useSelector((state) => state.auth.authData);
   
-  // Also check localStorage as fallback (in case Redux state hasn't updated yet)
-  const checkLocalStorage = () => {
+  // Memoize localStorage check - only run once on mount, cached after that
+  const userFromLocalStorage = useMemo(() => {
     try {
       const profile = localStorage.getItem('profile');
       if (profile) {
         const parsed = JSON.parse(profile);
-        // The profile structure is { result: {...}, token: '...' }
-        // So we return parsed.result if it exists, or parsed itself
-        const result = parsed?.result || parsed || null;
-        return result;
+        return parsed?.result || parsed || null;
       }
       return null;
     } catch (error) {
       return null;
     }
-  };
+  }, []); // Empty deps - only check once on mount
   
-  const userFromLocalStorage = checkLocalStorage();
-  
-  // Check if user exists in Redux OR if we have a result in localStorage
-  // The localStorage structure is: { result: {...}, token: '...' }
-  // Redux state structure is: { authData: { result: {...}, token: '...' } }
-  const hasUserInRedux = user?.result || user;
-  const hasUserInLocalStorage = userFromLocalStorage;
-  const isAuthenticated = hasUserInRedux || hasUserInLocalStorage;
+  // Memoize authentication check to prevent unnecessary recalculations
+  const isAuthenticated = useMemo(() => {
+    const hasUserInRedux = user?.result || user;
+    return hasUserInRedux || userFromLocalStorage;
+  }, [user, userFromLocalStorage]);
 
   if (!GOOGLE_CLIENT_ID) {
     return (
@@ -62,23 +65,29 @@ const App = () => {
   }
 
   return (
-    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-      <BrowserRouter>
-        <Container maxWidth="xl">
-          <Navbar />
-          <Switch>
-            <Route path="/" exact component={() => (!isAuthenticated ? <Redirect to="/auth" /> : <Redirect to="/posts" />)} />
-            <Route path="/posts" exact component={() => (!isAuthenticated ? <Redirect to="/auth" /> : <Home />)} />
-            <Route path="/posts/search" exact component={() => (!isAuthenticated ? <Redirect to="/auth" /> : <Home />)} />
-            <Route path="/posts/:id" exact component={() => (!isAuthenticated ? <Redirect to="/auth" /> : <PostDetails />)} />
-            <Route path={['/creators/:name', '/tags/:name']} component={() => (!isAuthenticated ? <Redirect to="/auth" /> : <CreatorOrTag />)} />
-            <Route path="/auth/set-password" exact component={SetPassword} />
-            <Route path="/auth/reset-password" exact component={SetPassword} />
-            <Route path="/auth" exact component={() => (!isAuthenticated ? <Auth /> : <Redirect to="/posts" />)} />
-          </Switch>
-        </Container>
-      </BrowserRouter>
-    </GoogleOAuthProvider>
+    <ThemeProvider theme={theme}>
+      <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+        <BrowserRouter>
+          <Suspense fallback={<LoadingFallback />}>
+            <Container maxWidth="xl">
+              <Suspense fallback={null}>
+                <Navbar />
+              </Suspense>
+              <Switch>
+              <Route path="/" exact render={() => (!isAuthenticated ? <Redirect to="/auth" /> : <Redirect to="/posts" />)} />
+              <Route path="/posts" exact render={() => (!isAuthenticated ? <Redirect to="/auth" /> : <Home />)} />
+              <Route path="/posts/search" exact render={() => (!isAuthenticated ? <Redirect to="/auth" /> : <Home />)} />
+              <Route path="/posts/:id" exact render={() => (!isAuthenticated ? <Redirect to="/auth" /> : <PostDetails />)} />
+              <Route path={['/creators/:name', '/tags/:name']} render={() => (!isAuthenticated ? <Redirect to="/auth" /> : <CreatorOrTag />)} />
+              <Route path="/auth/set-password" exact component={SetPassword} />
+              <Route path="/auth/reset-password" exact component={SetPassword} />
+              <Route path="/auth" exact render={() => (!isAuthenticated ? <Auth /> : <Redirect to="/posts" />)} />
+              </Switch>
+            </Container>
+          </Suspense>
+        </BrowserRouter>
+      </GoogleOAuthProvider>
+    </ThemeProvider>
   );
 };
 
