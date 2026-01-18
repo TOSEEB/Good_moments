@@ -108,8 +108,6 @@ const Post = React.memo(({ post, setCurrentId }) => {
       </CardActions>
     </Card>
   );
-};
-
 });
 
 export default Post;
