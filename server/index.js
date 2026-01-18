@@ -47,19 +47,11 @@ app.get('/', (req, res) => {
   });
 });
 
-// Strip /api prefix if present (for Vercel rewrites)
-// This allows requests to /api/user/google to work with routes mounted at /user
-app.use((req, res, next) => {
-  if (req.originalUrl && req.originalUrl.startsWith('/api/')) {
-    req.url = req.originalUrl.replace(/^\/api/, '');
-  } else if (req.url && req.url.startsWith('/api/')) {
-    req.url = req.url.replace(/^\/api/, '');
-  }
-  next();
-});
-
 app.use('/posts', postRoutes);
 app.use('/user', userRoutes);
+// Also mount at /api prefix for Vercel serverless (rewrites preserve /api)
+app.use('/api/posts', postRoutes);
+app.use('/api/user', userRoutes);
 
 const CONNECTION_URL = process.env.MONGODB_URL;
 
