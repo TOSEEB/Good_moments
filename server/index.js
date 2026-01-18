@@ -11,7 +11,28 @@ const app = express();
 
 app.use(bodyParser.json({ limit: '30mb', extended: true }));
 app.use(bodyParser.urlencoded({ limit: '30mb', extended: true }));
-app.use(cors());
+
+// CORS configuration - allow all origins for Vercel deployments
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Allow localhost for development
+    if (origin.includes('localhost')) return callback(null, true);
+    
+    // Allow all Vercel deployments
+    if (origin.includes('.vercel.app')) return callback(null, true);
+    
+    // Allow custom domain (good-moments.vercel.app)
+    if (origin.includes('good-moments')) return callback(null, true);
+    
+    callback(null, true); // Allow all origins
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // Root route
 app.get('/', (req, res) => {
