@@ -79,6 +79,7 @@ const connectDB = async () => {
 };
 
 // Routes MUST be mounted before database middleware for proper path matching
+// Mount routes at multiple paths to handle both local dev and Vercel rewrites
 app.use('/posts', postRoutes);
 app.use('/user', userRoutes);
 app.use('/api/posts', postRoutes);

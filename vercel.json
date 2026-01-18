@@ -19,14 +19,6 @@
       "destination": "/api/index.js"
     },
     {
-      "source": "/posts/(.*)",
-      "destination": "/api/index.js"
-    },
-    {
-      "source": "/user/(.*)",
-      "destination": "/api/index.js"
-    },
-    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
