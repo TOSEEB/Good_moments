@@ -119,6 +119,15 @@ app.use('/posts', postRoutes);
 app.use('/user', userRoutes);
 console.log('✅ Routes registered at: /api/posts, /api/user, /posts, /user');
 
+// Debug: Log all registered routes
+app._router.stack.forEach((middleware) => {
+  if (middleware.route) {
+    console.log(`📋 Route: ${Object.keys(middleware.route.methods).join(',').toUpperCase()} ${middleware.route.path}`);
+  } else if (middleware.name === 'router') {
+    console.log(`📋 Router mounted at: ${middleware.regexp}`);
+  }
+});
+
 // For Vercel serverless functions - connect on first request
 app.use(async (req, res, next) => {
   try {
@@ -131,6 +140,44 @@ app.use(async (req, res, next) => {
     // Continue without DB (for development/testing)
     next();
   }
+});
+
+// Debug middleware - log ALL requests before 404 handler
+app.use((req, res, next) => {
+  // Only log if not already handled (status not set)
+  if (!res.headersSent) {
+    console.log(`🔍 Request reached end of middleware chain: ${req.method} ${req.path}`);
+    console.log(`   Full URL: ${req.url}`);
+    console.log(`   Original URL: ${req.originalUrl}`);
+    console.log(`   Base URL: ${req.baseUrl || 'none'}`);
+    
+    // Check if this is a POST to /api/user/google or similar
+    if (req.method === 'POST' && (req.path.includes('/user') || req.url.includes('/user'))) {
+      console.error(`⚠️ POST request to user route not matched!`);
+      console.error(`   This should have been caught by userRoutes`);
+      console.error(`   Registered routes: /api/user/* and /user/*`);
+    }
+  }
+  next();
+});
+
+// 405 handler - catch methods not allowed (before 404)
+app.use('*', (req, res, next) => {
+  // If we get here and it's a POST/PUT/DELETE, it might be a 405
+  if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(req.method)) {
+    console.error(`❌ 405 - Method ${req.method} not allowed or route not found: ${req.originalUrl || req.url}`);
+    console.error(`   Path: ${req.path}, URL: ${req.url}, Original: ${req.originalUrl}`);
+    return res.status(405).json({ 
+      message: `Method ${req.method} not allowed`, 
+      path: req.path, 
+      url: req.url,
+      originalUrl: req.originalUrl,
+      method: req.method,
+      availableRoutes: ['/api/user/signup', '/api/user/signin', '/api/user/google', '/api/posts'],
+      hint: 'Check Vercel function logs to see what path Express received'
+    });
+  }
+  next();
 });
 
 // 404 handler - catch unmatched routes (MUST be last)
