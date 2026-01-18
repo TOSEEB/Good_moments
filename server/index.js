@@ -47,8 +47,12 @@ app.get('/', (req, res) => {
   });
 });
 
+// Mount routes for both local dev and Vercel serverless
+// Vercel rewrites preserve /api prefix, so we mount at both paths
 app.use('/posts', postRoutes);
+app.use('/api/posts', postRoutes);
 app.use('/user', userRoutes);
+app.use('/api/user', userRoutes);
 
 const CONNECTION_URL = process.env.MONGODB_URL;
 
